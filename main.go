@@ -5,13 +5,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"unicode"
 
-	nanoid "github.com/matoous/go-nanoid/v2"
+	"golang.org/x/text/runes"
+	"golang.org/x/text/transform"
+	"golang.org/x/text/unicode/norm"
+
+	goaway "github.com/TwiN/go-away"
+	"github.com/molarmanful/talking-heads/user"
 	"github.com/olahol/melody"
 )
 
 func main() {
 	m := melody.New()
+	ga := goaway.NewProfanityDetector()
 
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
@@ -20,15 +27,12 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
-		id, err := nanoid.New()
-		if err != nil {
-			panic(err)
-		}
+		u := user.New()
 
-		s.Set("user", &User{id, "000000"})
-		m.Broadcast([]byte("+ " + id))
+		s.Set("user", u)
+		m.Broadcast([]byte("+ " + u.ID))
 
-		log.Println("+", id)
+		log.Println("+", u.ID)
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -37,8 +41,14 @@ func main() {
 			return
 		}
 
-		user := v.(*User)
-		m.Broadcast(append([]byte("m "+user.String()+" "), msg...))
+		msg1, e := removeAccents(string(msg[:]))
+		if e != nil {
+			return
+		}
+		msg1 = ga.Censor(msg1)
+
+		u := v.(*user.User)
+		m.Broadcast([]byte("m " + u.String() + " " + msg1))
 	})
 
 	m.HandleDisconnect(func(s *melody.Session) {
@@ -47,26 +57,23 @@ func main() {
 			return
 		}
 
-		user := v.(*User)
-		m.BroadcastOthers([]byte("- "+user.ID), s)
+		u := v.(*user.User)
+		m.BroadcastOthers([]byte("- "+(*u).ID), s)
 
-		log.Println("-", user.ID)
+		log.Println("-", u.ID)
 	})
 
 	port := flag.Int("port", 3000, "port to serve on")
 	log.Println("Listening on port", *port)
 
-	err := http.ListenAndServe(fmt.Sprint(":", *port), nil)
-	if err != nil {
-		log.Fatal(err)
+	e := http.ListenAndServe(fmt.Sprint(":", *port), nil)
+	if e != nil {
+		log.Fatal(e)
 	}
 }
 
-// TODO: random color
-type User struct {
-	ID, COLOR string
-}
-
-func (u *User) String() string {
-	return u.ID + " " + u.COLOR
+func removeAccents(s string) (string, error) {
+	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
+	o, _, e := transform.String(t, s)
+	return o, e
 }
