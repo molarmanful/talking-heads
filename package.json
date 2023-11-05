@@ -1,0 +1,32 @@
+{
+  "name": "talking-heads",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "prettier --plugin-search-dir . --check . && eslint .",
+    "format": "prettier --plugin-search-dir . --write ."
+  },
+  "dependencies": {
+    "vite": "^4.5.0",
+    "svelte": "^4.2.2",
+    "@sveltejs/adapter-static": "^2.0.3",
+    "@sveltejs/kit": "^1.27.3",
+    "unocss": "^0.57.2",
+    "@unocss/extractor-svelte": "^0.57.2",
+    "@unocss/preset-mini": "^0.57.2",
+    "@unocss/reset": "^0.57.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "eslint-config-prettier": "^8.10.0",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-svelte": "^2.34.1",
+    "prettier": "^2.8.8",
+    "prettier-plugin-svelte": "^2.10.1",
+    "stylelint-config-standard": "^34.0.0"
+  },
+  "type": "module"
+}
