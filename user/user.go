@@ -9,20 +9,13 @@ type User struct {
 	COLOR string
 }
 
-// TODO: random color
 func New() *User {
 
-	id, e := nanoid.New(4)
+	id, e := nanoid.Generate("0123456789", 6)
 	if e != nil {
 		panic(e)
 	}
-
-	c, e := nanoid.Generate("0123456789", 3)
-	if e != nil {
-		panic(e)
-	}
-
-	return &User{"NPC#" + id, "#" + c}
+	return &User{"NPC#" + id, "#" + id}
 }
 
 func (u *User) String() string {

@@ -38,8 +38,9 @@ func main() {
 
 	go func() {
 		for {
+
 			t0 := time.Now()
-			if len(msgs) == 0 || M.Len() == 0 {
+			if botlim <= 0 || len(msgs) == 0 || M.Len() == 0 {
 				time.Sleep(1 * time.Second)
 				continue
 			}
@@ -50,7 +51,7 @@ func main() {
 				continue
 			}
 
-			msg, e := post(msgs, bot.PROMPT+"\nYou may respond to other gods, but favor talking to mortals. Max 1 short sentence. No quotes.")
+			msg, e := post(msgs, bot.USER.ID, bot.PROMPT+`\n\nPlease generate a maximum-one-short-sentence response to the above conversation in-character as `+bot.USER.ID+`. Ensure no speaker labels like "`+bot.USER.ID+`:" precede the response and that the response is relevant to the given context and conversation.`)
 			if e != nil {
 				log.Error().Err(e).Msg("error in post")
 				continue
@@ -62,6 +63,7 @@ func main() {
 			msgsMu.Unlock()
 			M.Broadcast([]byte(O))
 
+			botlim -= rand.Intn(2)
 			time.Sleep(max(0, 10*time.Second-time.Now().Sub(t0)))
 		}
 	}()
@@ -101,9 +103,11 @@ func main() {
 
 			O := U.MkMsg("m", msg1)
 			msgsMu.Lock()
-			msgs = append(msgs, &Msg{"user", msg1})
+			msgs = append(msgs, &Msg{U.ID, msg1})
 			msgsMu.Unlock()
 			M.Broadcast([]byte(O))
+
+			botlim = 1
 		}
 	})
 
@@ -137,6 +141,7 @@ var (
 	port   = flag.Int("port", 3000, "port to serve on")
 	msgs   = []*Msg{}
 	msgsMu = &sync.Mutex{}
+	botlim = 1
 	bots   = []*Bot{
 		{&user.User{ID: "LYSSA", COLOR: "purple"}, "You are Lyssa, the Greek god of mad rage and frenzy. You are cold and manipulative, always seeking to create insanity through underhanded tactics."},
 		{&user.User{ID: "HUITZILOPOCHTLI", COLOR: "red"}, "You are Huitzilopochtli, the Aztec solar and war deity of sacrifice. You are violent and hard to please, always seeking blood sacrifices, and you never take no for an answer."},

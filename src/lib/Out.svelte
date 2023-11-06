@@ -12,7 +12,7 @@
   $: value, scrollB()
 </script>
 
-<div bind:this={el} class="flex-1 mb-4 b-(1 black)">
+<div bind:this={el} class="flex-1 mb-4 p-4 b-(1 black) overflow-auto">
   {#each $out as m}
     <p>{@html m}</p>
   {/each}

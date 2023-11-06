@@ -43,23 +43,20 @@
     )
 
     ws.addEventListener('open', () => {
-      console.log('open')
       pre = false
     })
 
     ws.addEventListener('message', ({ data }) => {
-      console.log(data)
       parse(data)
     })
 
     ws.addEventListener('close', () => {
-      console.log('close')
-      cout('(disconnected)')
+      cout('(disconnected)', 'red')
     })
   })
 </script>
 
-<main class="flex-(~ col) screen p-8 b-(1 black)">
+<main class="flex-(~ col) screen max-screen p-8 b-(1 black)">
   <Out el={outp} {out} {value} />
   <!-- TODO: char indicator -->
   <In el={inp} {pre} {value} {ws} />
