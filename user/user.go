@@ -5,12 +5,14 @@ import (
 )
 
 type User struct {
-	ID, COLOR string
+	ID    string
+	COLOR string
 }
 
 // TODO: random color
 func New() *User {
-	id, e := nanoid.New()
+
+	id, e := nanoid.New(4)
 	if e != nil {
 		panic(e)
 	}
@@ -20,9 +22,13 @@ func New() *User {
 		panic(e)
 	}
 
-	return &User{id, c}
+	return &User{"NPC#" + id, "#" + c}
 }
 
 func (u *User) String() string {
 	return u.ID + " " + u.COLOR
+}
+
+func (u *User) MkMsg(h string, b string) string {
+	return h + " " + u.String() + " " + b
 }

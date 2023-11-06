@@ -1,7 +1,5 @@
 import js from '@eslint/js'
-
 import prettier from 'eslint-config-prettier'
-
 import imprt from 'eslint-plugin-import'
 import svelte from 'eslint-plugin-svelte'
 import globals from 'globals'

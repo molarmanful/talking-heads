@@ -1,5 +1,4 @@
 import extractorSvelte from '@unocss/extractor-svelte'
-import { colorResolver } from '@unocss/preset-mini/utils'
 import {
   presetUno,
   presetWebFonts,
