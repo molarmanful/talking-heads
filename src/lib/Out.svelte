@@ -37,8 +37,8 @@
 
   {#each $typ as { id, c }}
     <p class="text-gray" transition:fly={{ duration: 200, y: 40 }}>
-      &gt; <span style:color={c} style:background-color={goodBG(c)}>{id}</span> is
-      thinking...
+      &gt; <span style:color={c} style:background-color={goodBG(c)}>{id}</span
+      >...
     </p>
   {/each}
 </div>

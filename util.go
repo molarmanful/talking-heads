@@ -16,17 +16,19 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func calcWs(lms []*Msg) []*Bot {
+func calcWs(lms []*Msg) ([]*Bot, string) {
 
 	ws := make(map[string]int)
+	lU := ""
 	for _, m := range lms {
 		if v, ok := wbots[m.USER.ID]; ok {
 			ws = v
+			lU = m.USER.ID
 		}
 	}
 	if ws == nil {
 		log.Warn().Msg("no usr msgs?")
-		return bots
+		return bots, lU
 	}
 
 	for i, m := range lms {
@@ -47,7 +49,7 @@ func calcWs(lms []*Msg) []*Bot {
 		}
 	}
 
-	return bs
+	return bs, lU
 }
 
 func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {

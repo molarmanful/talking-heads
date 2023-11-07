@@ -65,6 +65,10 @@ func main() {
 		wbotsMu.Unlock()
 		relsMu.Unlock()
 
+		usersMu.Lock()
+		users[U.ID] = s
+		usersMu.Unlock()
+
 		ms := make([]string, len(msgs))
 		for i, v := range msgs {
 			ms[i] = v.String()
@@ -144,7 +148,7 @@ func main() {
 
 			lms := msgs[len(msgs)-min(len(msgs), 10):]
 
-			rs := calcWs(lms)
+			rs, lU := calcWs(lms)
 			bot := rs[rand.Intn(len(rs))]
 			if bot.USER.ID == msgs[len(msgs)-1].USER.ID {
 				continue
@@ -156,18 +160,6 @@ func main() {
 				continue
 			}
 
-			if id := npcR.FindString(msg); id != "" {
-				id = id[1:]
-				if rs, ok := rels[id]; ok {
-					if r := rs[bot.USER.ID]; sent.SentimentAnalysis(msg, sentiment.English).Score > 0 {
-						r = min(100, r+rand.Intn(20)+1)
-					} else {
-						r = max(-100, r-rand.Intn(20)+1)
-					}
-					println("rel", id, bot.USER.ID, rs[bot.USER.ID])
-				}
-			}
-
 			M.Broadcast([]byte(bot.USER.MkMsg("-t", "")))
 
 			O := bot.USER.MkMsg("m", msg)
@@ -175,6 +167,26 @@ func main() {
 			msgs = append(msgs, &Msg{bot.USER, msg})
 			msgsMu.Unlock()
 			M.Broadcast([]byte(O))
+
+			id := npcR.FindString(msg)
+			if id == "" {
+				id = lU
+			} else {
+				id = "NPC#" + id
+			}
+
+			if id != "" {
+				if rs, ok := rels[id]; ok {
+					s := "gained"
+					if r := rs[bot.USER.ID]; sent.SentimentAnalysis(msg, sentiment.English).Score > 0 {
+						r = min(100, r+rand.Intn(20)+1)
+					} else {
+						r = max(-100, r-rand.Intn(20)+1)
+						s = "lost"
+					}
+					users[id].Write([]byte(bot.USER.MkMsg("r", s)))
+				}
+			}
 
 			botlimMu.Lock()
 			botlim--

@@ -47,6 +47,10 @@
         D.msg({ id, c }, b.join` `)
       },
 
+      r() {
+        D.info(`You have ${b.join` `} favor with ${id}.`)
+      },
+
       e() {
         D.err(b.join` `)
       },
