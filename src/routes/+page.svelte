@@ -10,8 +10,6 @@
   let value = ''
   let idc = {}
   let ws
-  let inp
-  let outp
   let fav = 'NONE'
 
   let D = {}
@@ -30,7 +28,11 @@
       },
 
       ['w']() {
-        fav = b.join` `
+        ;[fav, ...b] = b.join` `.split`\n`.filter(x => x.trim())
+        for (let x of b) {
+          let [id, c, ...s] = x.split` `
+          D.msg({ id, c }, s.join` `)
+        }
       },
 
       ['+t']() {
@@ -57,7 +59,7 @@
 
   onMount(() => {
     ws = new WebSocket(
-      `${location.protocol == 'https' ? 'wss' : 'ws'}://${location.host}/ws`
+      `${location.protocol == 'https:' ? 'wss' : 'ws'}://${location.host}/ws`
     )
 
     ws.addEventListener('open', () => {})
@@ -75,6 +77,6 @@
 <main class="flex-(~ col) screen max-screen p-(8 t-3) gap-5">
   <Splash bind:splash />
   <Header />
-  <Out el={outp} {out} {typ} {value} />
-  <In {D} el={inp} {fav} {idc} {splash} {value} {ws} />
+  <Out {out} {typ} />
+  <In {D} {fav} {idc} {splash} {value} {ws} />
 </main>

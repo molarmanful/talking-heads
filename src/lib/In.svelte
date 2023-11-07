@@ -4,7 +4,7 @@
   export let D
   export let ws
   export let value
-  export let el
+  let el
   export let idc
   export let splash = true
   export let fav

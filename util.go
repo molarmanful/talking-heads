@@ -20,7 +20,7 @@ func calcWs(lms []*Msg) []*Bot {
 
 	ws := make(map[string]int)
 	for _, m := range lms {
-		if v, ok := wbots[m.ID]; ok {
+		if v, ok := wbots[m.USER.ID]; ok {
 			ws = v
 		}
 	}
@@ -35,7 +35,7 @@ func calcWs(lms []*Msg) []*Bot {
 			ws[id] += max(0, len(bots)/2+10-i*i-j*j)
 		}
 
-		if w, ok := ws[m.ID]; ok {
+		if w, ok := ws[m.USER.ID]; ok {
 			w += len(bots) / 2
 		}
 	}
@@ -60,19 +60,20 @@ func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 		// "version": "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
 		"version": "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
 		"input": map[string]interface{}{
-			"top_k":       50,
-			"top_p":       .95,
-			"prompt":      r,
-			"temperature": .8,
+			"prompt": r,
 			"system_prompt": strings.Join([]string{
 				bot.PROMPT,
 				relstr, "\n",
 				`Generate a concise one-sentence response to the conversation as ` + id + `, without using speaker labels and ensuring relevance to the context provided.`,
-				`Example responses:\nWitness my power, mere mortal!\nYou will suffer for your transgressions, NPC#F69420.\nZEUS, I find you tolerable.`,
+				`If you understand the prompt, start your response with "RES:".`,
+				`Example responses:\nRES: Witness my power, mere mortal!\nRES: You will suffer for your transgressions, NPC#F69420.\nRES: ZEUS, I find you tolerable.`,
 			}, " "),
 			"max_new_tokens":     100,
 			"min_new_tokens":     -1,
+			"temperature":        .9,
 			"repetition_penalty": 1.18,
+			"top_k":              30,
+			"top_p":              .73,
 		},
 	})
 	if e != nil {
@@ -104,7 +105,7 @@ func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 
 	O := strings.TrimSpace(strings.Join(post.Output, ""))
 	log.Info().Msg(O)
-	return strings.TrimSpace(strings.TrimPrefix(O, "A:")), nil
+	return strings.TrimSpace(strings.TrimPrefix(O, "RES:")), nil
 }
 
 func tagMsgs(id string, n int) string {
@@ -113,7 +114,7 @@ func tagMsgs(id string, n int) string {
 	O := ""
 	ins := false
 	for _, m := range msgs[len(msgs)-n:] {
-		if m.ID == id {
+		if m.USER.ID == id {
 			if ins {
 				O = O[:len(O)-1] + " [/INS]\n"
 			}
@@ -125,7 +126,7 @@ func tagMsgs(id string, n int) string {
 		if !ins {
 			O += "[INS] "
 		}
-		O += m.ID + ": " + m.BODY + "\n"
+		O += m.USER.ID + ": " + m.BODY + "\n"
 		ins = true
 	}
 	if ins {
@@ -140,11 +141,11 @@ func relStr(lms []*Msg, id string) string {
 	uniq := make(map[string]bool)
 	rs := make([]string, 0, 10)
 	for _, m := range lms {
-		if v, ok := rels[m.ID]; ok {
-			if _, ok := uniq[m.ID]; ok {
+		if v, ok := rels[m.USER.ID]; ok {
+			if _, ok := uniq[m.USER.ID]; ok {
 				continue
 			}
-			uniq[m.ID] = true
+			uniq[m.USER.ID] = true
 
 			s := "tolerate"
 			if v[id] >= 75 {
@@ -162,7 +163,7 @@ func relStr(lms []*Msg, id string) string {
 			} else if v[id] <= -25 {
 				s = "dislike"
 			}
-			rs = append(rs, s+" "+m.ID)
+			rs = append(rs, s+" "+m.USER.ID)
 		}
 	}
 
@@ -185,8 +186,12 @@ type Post struct {
 }
 
 type Msg struct {
-	ID   string
+	USER *User
 	BODY string
+}
+
+func (m *Msg) String() string {
+	return m.USER.String() + " " + m.BODY
 }
 
 type Bot struct {

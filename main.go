@@ -65,7 +65,11 @@ func main() {
 		wbotsMu.Unlock()
 		relsMu.Unlock()
 
-		s.Write([]byte(U.MkMsg("w", id)))
+		ms := make([]string, len(msgs))
+		for i, v := range msgs {
+			ms[i] = v.String()
+		}
+		s.Write([]byte(U.MkMsg("w", id+"\n"+strings.Join(ms, "\n"))))
 
 		O := U.MkMsg("+", "")
 		M.Broadcast([]byte(O))
@@ -96,7 +100,7 @@ func main() {
 
 			O := U.MkMsg("m", msg1)
 			msgsMu.Lock()
-			msgs = append(msgs, &Msg{U.ID, msg1})
+			msgs = append(msgs, &Msg{U, msg1})
 			msgsMu.Unlock()
 			M.Broadcast([]byte(O))
 
@@ -142,7 +146,7 @@ func main() {
 
 			rs := calcWs(lms)
 			bot := rs[rand.Intn(len(rs))]
-			if bot.USER.ID == msgs[len(msgs)-1].ID {
+			if bot.USER.ID == msgs[len(msgs)-1].USER.ID {
 				continue
 			}
 
@@ -168,7 +172,7 @@ func main() {
 
 			O := bot.USER.MkMsg("m", msg)
 			msgsMu.Lock()
-			msgs = append(msgs, &Msg{bot.USER.ID, msg})
+			msgs = append(msgs, &Msg{bot.USER, msg})
 			msgsMu.Unlock()
 			M.Broadcast([]byte(O))
 
