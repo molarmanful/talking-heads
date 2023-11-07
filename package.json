@@ -21,6 +21,7 @@
     "vite": "^4.5.0"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.10",
     "eslint": "^8.53.0",
     "eslint-config-prettier": "^8.10.0",
     "eslint-plugin-import": "^2.29.0",
