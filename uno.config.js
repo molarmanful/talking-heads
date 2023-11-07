@@ -12,7 +12,7 @@ export default {
     presetWebFonts({
       provider: 'google',
       fonts: {
-        mono: 'Fira Code',
+        mono: 'Fira Code:400,700',
       },
     }),
   ],

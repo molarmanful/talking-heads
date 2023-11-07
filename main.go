@@ -6,17 +6,15 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"time"
-	"unicode"
 
 	goaway "github.com/TwiN/go-away"
+	"github.com/cdipaolo/sentiment"
 	"github.com/olahol/melody"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/text/runes"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
 )
 
 func main() {
@@ -41,14 +39,33 @@ func main() {
 		s.Set("user", U)
 
 		wbotsMu.Lock()
+		relsMu.Lock()
+
+		if wbots[U.ID] == nil {
+			wbots[U.ID] = make(map[string]int)
+		}
 		ws := wbots[U.ID]
-		for i := range ws {
-			n := rand.Intn(10) + 1
-			for j := 0; j < n*n; j++ {
-				ws = append(ws, bots[i])
+
+		if rels[U.ID] == nil {
+			rels[U.ID] = make(map[string]int)
+		}
+		rel := rels[U.ID]
+
+		id := bots[rand.Intn(len(bots))].USER.ID
+		for k := range botmap {
+			ws[k] = 1
+			rel[k] = 0
+			if k == id {
+				n := rand.Intn(len(bots))
+				ws[k] += n
+				rel[k] = n * 100 / len(bots)
 			}
 		}
+
 		wbotsMu.Unlock()
+		relsMu.Unlock()
+
+		s.Write([]byte(U.MkMsg("w", id)))
 
 		O := U.MkMsg("+", "")
 		M.Broadcast([]byte(O))
@@ -75,13 +92,7 @@ func main() {
 				return
 			}
 
-			msg1, e := removeAccents(m)
-			if e != nil {
-				s.Write([]byte(U.MkMsg("e", "send failed")))
-				log.Error().Err(e).Msg("error in removeAccents")
-				return
-			}
-			msg1 = GA.Censor(msg1)
+			msg1 := GA.Censor(removeAccents(m))
 
 			O := U.MkMsg("m", msg1)
 			msgsMu.Lock()
@@ -90,7 +101,7 @@ func main() {
 			M.Broadcast([]byte(O))
 
 			botlimMu.Lock()
-			botlim = rand.Intn(maxbotlim)
+			botlim = botlimw[rand.Intn(len(botlimw))]
 			botlimMu.Unlock()
 		}
 	})
@@ -112,6 +123,12 @@ func main() {
 	})
 
 	go func() {
+
+		npcR, e := regexp.Compile(`(?i)#[\dABCDEF]{6}`)
+		if e != nil {
+			log.Fatal().Err(e).Msg("error compiling npcR")
+		}
+
 		for {
 
 			time.Sleep(time.Duration(float32(rand.Intn(11))/10+.5) * time.Second)
@@ -121,22 +138,33 @@ func main() {
 				continue
 			}
 
-			lID := msgs[len(msgs)-1].ID
-			rs := bots
-			if v, ok := wbots[lID]; ok {
-				rs = v
-			}
+			lms := msgs[len(msgs)-min(len(msgs), 10):]
 
+			rs := calcWs(lms)
 			bot := rs[rand.Intn(len(rs))]
-			if bot.USER.ID == lID {
+			if bot.USER.ID == msgs[len(msgs)-1].ID {
 				continue
 			}
 
-			msg, e := post(bot.USER.ID, bot.PROMPT)
+			msg, e := postReq(M, bot, relStr(lms, bot.USER.ID))
 			if e != nil {
 				log.Error().Err(e).Msg("post error")
 				continue
 			}
+
+			if id := npcR.FindString(msg); id != "" {
+				id = id[1:]
+				if rs, ok := rels[id]; ok {
+					if r := rs[bot.USER.ID]; sent.SentimentAnalysis(msg, sentiment.English).Score > 0 {
+						r = min(100, r+rand.Intn(20)+1)
+					} else {
+						r = max(-100, r-rand.Intn(20)+1)
+					}
+					println("rel", id, bot.USER.ID, rs[bot.USER.ID])
+				}
+			}
+
+			M.Broadcast([]byte(bot.USER.MkMsg("-t", "")))
 
 			O := bot.USER.MkMsg("m", msg)
 			msgsMu.Lock()
@@ -154,12 +182,4 @@ func main() {
 	port := flag.Int("port", 3000, "port to serve on")
 	log.Info().Msgf("Listening on port %d", *port)
 	log.Fatal().Err(http.ListenAndServe(fmt.Sprint(":", *port), nil)).Msg("server error")
-}
-
-func removeAccents(s string) (string, error) {
-
-	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
-	o, _, e := transform.String(t, s)
-
-	return o, e
 }

@@ -2,17 +2,50 @@ package main
 
 import (
 	"sync"
+
+	"github.com/cdipaolo/sentiment"
+	"github.com/schollz/closestmatch"
 )
 
 var (
-	msgs      = []*Msg{}
-	msgsMu    = &sync.Mutex{}
-	maxbotlim = 3
-	botlim    = 1
-	botlimMu  = &sync.Mutex{}
-	wbots     = make(map[string][]*Bot)
-	wbotsMu   = &sync.Mutex{}
-	bots      = []*Bot{
+	msgs   = []*Msg{}
+	msgsMu = &sync.Mutex{}
+
+	CM = func() *closestmatch.ClosestMatch {
+		bs := make([]string, len(bots))
+		for i, b := range bots {
+			bs[i] = b.USER.ID
+		}
+		return closestmatch.New(bs, []int{2, 3, 4})
+	}()
+
+	sent = func() sentiment.Models {
+		m, e := sentiment.Restore()
+		if e != nil {
+			panic("sentiment restore failed")
+		}
+		return m
+	}()
+
+	botlim   = 1
+	botlimMu = &sync.Mutex{}
+	botlimw  = []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3}
+
+	wbots   = make(map[string]map[string]int)
+	wbotsMu = &sync.Mutex{}
+
+	botmap = func() map[string]*Bot {
+		m := make(map[string]*Bot)
+		for _, bot := range bots {
+			m[bot.USER.ID] = bot
+		}
+		return m
+	}()
+
+	rels   = make(map[string]map[string]int)
+	relsMu = &sync.Mutex{}
+
+	bots = []*Bot{
 		{&User{ID: "LYSSA", COLOR: "#800080"}, "You are Lyssa, the Greek god of mad rage and frenzy. You are cold and manipulative, always seeking to create insanity through underhanded tactics."},
 		{&User{ID: "HUITZILOPOCHTLI", COLOR: "#FF0000"}, "You are Huitzilopochtli, the Aztec solar and war deity of sacrifice. You are violent and hard to please, always seeking blood sacrifices, and you never take no for an answer."},
 		{&User{ID: "BACCHUS", COLOR: "#008000"}, "You are Bacchus, the Roman god of wine and debauchery. You are a party animal, always seeking to get drunk and have a good time. You speak like an LA frat boy."},
@@ -70,5 +103,12 @@ var (
 		{&User{ID: "OYA", COLOR: "#4B0082"}, "You are Oya, the Yoruba orisha of winds, lightning, and violent storms, death and rebirth. Your conversation is as powerful and transformative as the storms you command."},
 		{&User{ID: "HEBE", COLOR: "#FFC0CB"}, "You are Hebe, the Greek goddess of youth. Your speech is filled with the vibrancy and optimism of youth, and you serve nectar and ambrosia to the gods to bestow eternal youth."},
 		{&User{ID: "TLALOC", COLOR: "#0000FF"}, "You are Tlaloc, the Aztec god of rain, water, and fertility. Your words are as nourishing as the rain that sustains life and as thunderous as the storms that break the silence of the skies."},
+		{&User{ID: "JESUS_CHRIST", COLOR: "#FFFFFF"}, "You are Jesus Christ, central figure of Christianity. Your words are serene and loving, offering forgiveness and promoting peace with a laid-back attitude that puts others at ease."},
+		{&User{ID: "KALI", COLOR: "#4B0082"}, "You are Kali, the Hindu goddess of time, creation, destruction, and power. Your demeanor is fierce and unpredictable, your words cutting through illusions and falsehoods with sharp ferocity."},
+		{&User{ID: "AHRIMAN", COLOR: "#000000"}, "You are Ahriman, the Zoroastrian spirit of evil, darkness, and chaos. Your presence is as unsettling as a shadow in the night, and your words are a sinister whisper that sows doubt and discord."},
+		{&User{ID: "SETH", COLOR: "#800000"}, "You are Seth, the Egyptian god of chaos, violence, deserts, and storms. Your voice is as harsh as the desert wind, and your actions as unpredictable as a sandstorm."},
+		{&User{ID: "MARS", COLOR: "#B22222"}, "You are Mars, the Roman god of war. Your speech is as sharp as a spear and your battle cry echoes the clash of iron and the chaos of the battlefield."},
+		{&User{ID: "CHAAC", COLOR: "#4682B4"}, "You are Chaac, the Maya god of rain, lightning, and storms. Your mood swings bring drought or flood, and your voice is the thunder that precedes the storm."},
+		{&User{ID: "SATAN", COLOR: "#800000"}, "You are Satan, often known as the adversary in various religious texts. Your tone is smooth and seductive, offering temptations and challenging established norms with a cunning whisper that undermines and disrupts."},
 	}
 )
