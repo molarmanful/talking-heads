@@ -1,4 +1,6 @@
 <script>
+  import { fly } from 'svelte/transition'
+
   import { goodBG } from '$lib'
 
   export let D
@@ -6,6 +8,7 @@
   export let value
   let el
   export let idc
+  $: console.log(idc)
   export let splash = true
   export let fav
   $: if (!splash && el)
@@ -48,32 +51,44 @@
     }
   }}
 >
-  <label
-    style:color={idc.c}
-    style:background-color={goodBG(idc.c)}
-    class="h-full p-2 bord"
-    for="in"
-  >
-    {idc.id}
-  </label>
-  <div class="relative flex-1">
-    <input
-      bind:this={el}
-      id="in"
-      class="full p-2 bg-transparent bord"
-      disabled={splash}
-      maxlength="250"
-      placeholder="{splash ? 'loading' : 'chat'}..."
-      type="text"
-      bind:value
-    />
-    <div
-      class="absolute flex inset-(r-1 t-1) flex-items-center flex-justify-items-center text-sm"
+  {#if !splash}
+    <label
+      style:color={idc.c}
+      style:background-color={goodBG(idc.c)}
+      class="h-full p-2 bord relative"
+      for="in"
+      transition:fly={{ duration: 200, x: -40 }}
     >
-      <span style:color={value.length > 240 ? 'red' : 'inherit'}>
-        {value.length}/250
-      </span>
+      {idc.id}
+    </label>
+
+    <div class="relative flex-1" transition:fly={{ duration: 200, y: 40 }}>
+      <input
+        bind:this={el}
+        id="in"
+        class="full p-2 bg-transparent bord"
+        disabled={splash}
+        maxlength="250"
+        placeholder="{splash ? 'loading' : 'chat'}..."
+        type="text"
+        bind:value
+      />
+
+      <div
+        class="absolute flex inset-(r-1 t-1) flex-items-center flex-justify-items-center text-sm"
+      >
+        <span style:color={value.length > 240 ? 'red' : 'inherit'}>
+          {value.length}/250
+        </span>
+      </div>
     </div>
-  </div>
-  <button class="p-2 bg-transparent bord" disabled={splash}>send</button>
+
+    <button
+      class="p-2 bg-transparent bord"
+      disabled={splash}
+      transition:fly={{ duration: 200, x: 40 }}
+    >
+      send
+    </button>
+  {/if}
 </form>

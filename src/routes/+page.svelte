@@ -78,9 +78,9 @@
   })
 </script>
 
-<main class="flex-(~ col) screen max-screen p-(8 t-3) gap-5">
+<main class="flex-(~ col) screen max-screen p-(8 t-3) gap-5 overflow-hidden">
   <Splash bind:splash />
-  <Header />
+  <Header {splash} />
   <Out {out} {typ} />
   <In {D} {fav} {idc} {splash} {value} {ws} />
 </main>
