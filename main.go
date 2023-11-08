@@ -251,8 +251,7 @@ func main() {
 					log.Info().Msg(fmt.Sprintf("%f", ps))
 					s := ps.Compound
 					if s <= -0.05 || s >= 0.05 {
-						r := rs[bot.USER.ID]
-						r = max(-100, min(100, r+conf.MaxR*s))
+						rs[bot.USER.ID] = max(-100, min(100, rs[bot.USER.ID]+conf.MaxR*s))
 						users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
 					}
 				}
