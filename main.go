@@ -94,6 +94,10 @@ func main() {
 		wbotsMu.Unlock()
 		relsMu.Unlock()
 
+		O := U.MkMsg("+", "")
+		M.Broadcast([]byte(O))
+		log.Info().Msg(O)
+
 		// send msg history to client
 		lms := msgs[len(msgs)-min(len(msgs), conf.MsgCh):]
 		ms := make([]string, len(lms))
@@ -101,12 +105,8 @@ func main() {
 			ms[i] = v.String()
 		}
 
-		s.Write([]byte(U.MkMsg("w", id+"\n"+strings.Join(ms, "\n"))))
+		s.Write([]byte(U.MkMsg("w", fmt.Sprint(id, " ", M.Len()+len(bots))+"\n"+strings.Join(ms, "\n"))))
 		s.Set("chn", 1)
-
-		O := U.MkMsg("+", "")
-		M.Broadcast([]byte(O))
-		log.Info().Msg(O)
 	})
 
 	M.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -198,10 +198,7 @@ func main() {
 	// separate goroutine for bots
 	go func() {
 
-		npcR, e := regexp.Compile(`(?i)#[\dABCDEF]{6}`)
-		if e != nil {
-			log.Fatal().Err(e).Msg("error compiling npcR")
-		}
+		npcR := regexp.MustCompile(`(?i)#[\dABCDEF]{6}`)
 
 		for {
 			// wait randomly
@@ -253,9 +250,9 @@ func main() {
 					ps := sent.PolarityScores(msg)
 					log.Info().Msg(fmt.Sprintf("%f", ps))
 					s := ps.Compound
-					r := rs[bot.USER.ID]
-					r = max(-100, min(100, r+conf.MaxR*s))
-					if r <= -0.05 || r >= 0.05 {
+					if s <= -0.05 || s >= 0.05 {
+						r := rs[bot.USER.ID]
+						r = max(-100, min(100, r+conf.MaxR*s))
 						users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
 					}
 				}

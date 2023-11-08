@@ -10,7 +10,7 @@
   let value = ''
   let idc = {}
   let ws
-  let fav = 'NONE'
+  let fav = '[REDACTED]'
   let wslock = false
   let scrollB
   let keepScroll
@@ -33,11 +33,17 @@
       },
 
       ['w']() {
-        ;[fav, ...b] = b.join` `.split`\n`.filter(x => x.trim())
+        ;[h, ...b] = b.join` `.split`\n`.filter(x => x.trim())
+        let cnt
+        ;[fav, cnt] = h.split` `
         for (let x of b) {
           let [id, c, ...s] = x.split` `
           D.msg({ id, c }, s.join` `)
         }
+        D.info(
+          `Welcome, ${idc.id} of ${fav}. There are ${cnt} entities online.`
+        )
+        D.info('Type /help for a list of available commands.')
       },
 
       ['+t']() {

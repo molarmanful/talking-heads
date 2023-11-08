@@ -58,8 +58,7 @@ func calcWs(lms []*Msg) ([]*Bot, string) {
 	return bs, lU
 }
 
-// Requests response from Replicate API proxy.
-// NOTE: is synchronous.
+// Synchronously requests response from Replicate API proxy.
 func reqRes(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 
 	id := bot.USER.ID
