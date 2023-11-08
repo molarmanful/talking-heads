@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"strings"
 	"unicode"
@@ -63,8 +64,7 @@ func reqRes(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 
 	id := bot.USER.ID
 	log.Info().Msg("Q: " + id)
-
-	r := tagMsgs(id, conf.PLastN)
+	r := tagMsgs(id, rand.Intn(conf.PLastN)+1)
 	j, e := json.Marshal(&ReqR{
 		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
 		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
@@ -73,8 +73,8 @@ func reqRes(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 			SystemPrompt: strings.Join([]string{
 				bot.PROMPT,
 				relstr, "\n",
-				`Generate a concise one-sentence response to the conversation as ` + id + `, without using speaker labels and ensuring relevance to the context provided.`,
-				`If you understand the prompt, start your response with "RES:".`,
+				`Generate a concise one-sentence response as ` + id + ` to any message in the conversation, without using speaker labels and ensuring relevance to the context provided.`,
+				`If you understand this prompt, start your response with "RES:".`,
 				`Example responses:\nRES: Witness my power, mere mortal!\nRES: You will suffer for your transgressions, NPC#F69420.\nRES: ZEUS, I find you tolerable.`,
 			}, " "),
 			MaxNewTokens:      100,
@@ -190,7 +190,7 @@ func removeAccents(s string) string {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	o, _, e := transform.String(t, s)
 	if e != nil {
-		panic(e)
+		log.Fatal().Err(e).Send()
 	}
 
 	return o
@@ -243,7 +243,7 @@ func NewUser() *User {
 
 	id, e := nanoid.Generate("0123456789ABCDEF", 6)
 	if e != nil {
-		panic(e)
+		log.Fatal().Err(e).Send()
 	}
 	return &User{"NPC#" + id, "#" + id}
 }

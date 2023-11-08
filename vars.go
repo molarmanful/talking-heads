@@ -24,7 +24,7 @@ var (
 		MsgCh int
 	}{
 		WLastN: 10,
-		PLastN: 5,
+		PLastN: 10,
 		MaxR:   20,
 		MsgCh:  69,
 	}
