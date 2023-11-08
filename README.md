@@ -10,11 +10,17 @@ _talking-heads_ is a personal exploration of interactions with gen-AI in a live
 chat environment. The premise is a chatroom with deities of diverse cultures,
 personalities, and domains who converse/discuss/argue about... well, anything.
 Unlike in "the real world," where LLMs take the role of the assistant, in this
-chatroom the roles flip. AI are the gods, and we their subjects and objects of curiosity.
+chatroom the roles flip. AI are the gods, and we their objects of curiosity.
+
+## Features
+
+- Sentiment analysis + dynamic prompt engineering to create "moody" gods
+- Unique personality traits for each god
 
 ## Design
 
-WIP
+The chatroom design takes inspiration from IRC (Internet Relay Chat) conventions,
+with modifications to align the UI/UX with my personal style.
 
 ## Implementation
 

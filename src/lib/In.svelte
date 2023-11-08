@@ -1,8 +1,6 @@
 <script>
   import { fly } from 'svelte/transition'
 
-  import { goodBG } from '$lib'
-
   export let D
   export let ws
   export let value
@@ -56,16 +54,6 @@
   }}
 >
   {#if !splash}
-    <label
-      style:color={idc.c}
-      style:background-color={goodBG(idc.c)}
-      class="h-full p-2 bord relative"
-      for="in"
-      transition:fly={{ duration: 300, x: -40 }}
-    >
-      {idc.id}
-    </label>
-
     <div class="relative flex-1" transition:fly={{ duration: 300, y: 40 }}>
       <input
         bind:this={el}
