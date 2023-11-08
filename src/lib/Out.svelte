@@ -27,7 +27,7 @@
 
 <div
   bind:this={el}
-  class="flex-1 p-8 gap-3 bord overflow-auto"
+  class="flex-1 p-8 bord overflow-auto"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {
@@ -41,7 +41,7 @@
   {#each $out as { type, idc, m }}
     <div transition:fly={{ duration: 300, x: 40 }}>
       {#if type == 'msg'}
-        <Msg>
+        <Msg class="text-gray-300">
           <strong
             style:color={idc.c}
             style:background-color={goodBG(idc.c)}
