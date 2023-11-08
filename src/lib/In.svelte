@@ -73,7 +73,7 @@
 
     <button
       class="p-2 bg-transparent bord"
-      disabled={splash}
+      disabled={splash || !value.length}
       transition:fly={{ duration: 300, x: 40 }}
     >
       send
