@@ -40,7 +40,7 @@ func main() {
 		msgs = make([]*Msg, len(res))
 		for i, v := range res {
 			ms := strings.Split(v, " ")
-			msgs[i] = &Msg{&User{ms[0], ms[1]}, strings.Join(ms[2:], " ")}
+			msgs[i] = &Msg{User{ms[0], ms[1]}, strings.Join(ms[2:], " ")}
 		}
 	} else {
 		log.Error().Err(e).Msg("redis read th:chat error")
@@ -134,7 +134,7 @@ func main() {
 			}
 
 			// store + broadcast msg
-			m1 := &Msg{U, m}
+			m1 := &Msg{*U, m}
 			O := U.MkMsg("m", m)
 			msgsMu.Lock()
 			msgs = append(msgs, m1)
@@ -227,7 +227,7 @@ func main() {
 			}
 
 			// store + broadcast msg
-			m := &Msg{bot.USER, msg}
+			m := &Msg{*bot.USER, msg}
 			O := bot.USER.MkMsg("m", msg)
 			msgsMu.Lock()
 			msgs = append(msgs, m)

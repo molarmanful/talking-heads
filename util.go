@@ -219,7 +219,7 @@ type ResR struct {
 }
 
 type Msg struct {
-	USER *User
+	USER User
 	BODY string
 }
 
