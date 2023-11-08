@@ -250,13 +250,13 @@ func main() {
 			// update relation based on sentiment
 			if id != "" {
 				if rs, ok := rels[id]; ok {
-					s := sent.PolarityScores(msg).Compound
+					ps := sent.PolarityScores(msg)
+					log.Info().Msg(fmt.Sprintf("%f", ps))
+					s := ps.Compound
 					r := rs[bot.USER.ID]
 					r = max(-100, min(100, r+conf.MaxR*s))
-					if r != 0 {
-						go func() {
-							users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
-						}()
+					if r <= -0.05 || r >= 0.05 {
+						users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
 					}
 				}
 			}

@@ -3,7 +3,6 @@ module github.com/molarmanful/talking-heads
 go 1.21.3
 
 require (
-	github.com/TwiN/go-away v1.6.11
 	github.com/jonreiter/govader v0.0.0-20230129030235-c72a790a959e
 	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/olahol/melody v1.1.4

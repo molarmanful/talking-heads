@@ -31,6 +31,7 @@
 <div
   bind:this={el}
   class="flex-1 p-(8 r-[31%]) bord overflow-auto"
+  ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {
       scrh = el.scrollHeight
@@ -67,10 +68,16 @@
       >...
     </p>
   {/each}
+
+  <div style:overflow-anchor="auto" class="h-[1px]" />
 </div>
 
 <style>
   p {
     --at-apply: 'mt-3';
+  }
+
+  [ovr-parent] * {
+    overflow-anchor: none;
   }
 </style>
