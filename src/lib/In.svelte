@@ -1,14 +1,9 @@
 <script>
   import { fly } from 'svelte/transition'
 
-  export let D
-  export let ws
-  export let value
   let el
-  export let idc
+  export let D, ws, value, idc, fav, scrollB
   export let splash = true
-  export let fav
-  export let scrollB
 
   $: if (!splash && el)
     requestAnimationFrame(() => {

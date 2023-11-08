@@ -2,6 +2,7 @@ import { TinyColor, mostReadable } from '@ctrl/tinycolor'
 
 export { default as Splash } from './Splash.svelte'
 export { default as Header } from './Header.svelte'
+export { default as Msg } from './Msg.svelte'
 export { default as In } from './In.svelte'
 export { default as Out } from './Out.svelte'
 

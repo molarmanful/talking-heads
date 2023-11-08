@@ -19,6 +19,7 @@
   D.msg = (idc, m) => out.update(o => [...o, { type: 'msg', idc, m }])
   D.gsm = (idc, m) => out.update(o => [{ type: 'msg', idc, m }, ...o])
   D.err = m => out.update(o => [...o, { type: 'err', m }])
+  D.warn = m => out.update(o => [...o, { type: 'warn', m }])
   D.info = m => out.update(o => [...o, { type: 'info', m }])
   D.succ = m => out.update(o => [...o, { type: 'succ', m }])
   D.tpush = idc => typ.update(o => [...o, idc])
@@ -59,7 +60,7 @@
       },
 
       r() {
-        D[+b[0] > 0 ? 'succ' : 'err'](
+        D[+b[0] > 0 ? 'succ' : 'warn'](
           `You ${+b[0] > 0 ? 'gained' : 'lost'} favor with ${id}.`
         )
       },
@@ -97,7 +98,7 @@
     })
 
     ws.addEventListener('close', () => {
-      D.err('disconnected')
+      D.err('Disconnected. Please reload the page to rejoin.')
     })
   })
 </script>

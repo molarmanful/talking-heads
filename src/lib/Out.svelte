@@ -2,13 +2,10 @@
   import { createResizeObserver } from '@grail-ui/svelte'
   import { fly } from 'svelte/transition'
 
-  import { goodBG } from '.'
+  import { Msg, goodBG } from '.'
 
   let el
-  export let out
-  export let typ
-  export let ws
-  export let wslock
+  export let out, typ, ws, wslock
   let scrh = 0
 
   const { useResizeObserver, entries } = createResizeObserver()
@@ -30,7 +27,7 @@
 
 <div
   bind:this={el}
-  class="flex-1 p-8 bord overflow-auto"
+  class="flex-1 p-8 gap-3 bord overflow-auto"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {
@@ -44,20 +41,30 @@
   {#each $out as { type, idc, m }}
     <div transition:fly={{ duration: 300, x: 40 }}>
       {#if type == 'msg'}
-        <p class="text-gray-300">
-          <strong style:color={idc.c} style:background-color={goodBG(idc.c)}
-            >{idc.id}</strong
-          >: {m}
-        </p>
+        <Msg>
+          <strong
+            style:color={idc.c}
+            style:background-color={goodBG(idc.c)}
+            slot="h">{idc.id}</strong
+          >
+          <svelte:fragment slot="b">{m}</svelte:fragment>
+        </Msg>
       {:else}
-        <p
+        <Msg
           class={[
             'text-sm',
-            type == 'succ' ? 'text-green' : type == 'err' ? 'text-red' : '',
+            type == 'succ'
+              ? 'text-green'
+              : type == 'err'
+              ? 'text-red'
+              : type == 'warn'
+              ? 'text-yellow'
+              : '',
           ].join` `}
         >
-          &gt; {m}
-        </p>
+          <svelte:fragment slot="h">&gt</svelte:fragment>
+          <svelte:fragment slot="b">{m}</svelte:fragment>
+        </Msg>
       {/if}
     </div>
   {/each}
@@ -73,10 +80,6 @@
 </div>
 
 <style>
-  p {
-    --at-apply: 'mt-3';
-  }
-
   [ovr-parent] * {
     overflow-anchor: none;
   }
