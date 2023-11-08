@@ -49,7 +49,9 @@
       },
 
       r() {
-        D[b[0] == 'lost' ? 'err' : 'succ'](`You ${b[0]} favor with ${id}.`)
+        D[+b[0] > 0 ? 'succ' : 'err'](
+          `You ${+b[0] > 0 ? 'gained' : 'lost'} favor with ${id}.`
+        )
       },
 
       e() {

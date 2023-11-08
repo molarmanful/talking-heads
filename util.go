@@ -17,7 +17,6 @@ import (
 )
 
 // Generates bot weights based on recent msgs.
-// Also returns last user to send a msg (for later use).
 func calcWs(lms []*Msg) ([]*Bot, string) {
 
 	// get last user + their weights

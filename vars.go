@@ -3,21 +3,10 @@ package main
 import (
 	"sync"
 
-	"github.com/cdipaolo/sentiment"
+	"github.com/jonreiter/govader"
 	"github.com/olahol/melody"
 	"github.com/schollz/closestmatch"
 )
-
-type Config struct {
-	// Last n msgs to consider when generating bot weights.
-	WLastN int
-	// Last n msgs to consider when generating responses.
-	PLastN int
-	// Max relation gain per response.
-	MaxRU int
-	// Max relation loss per response.
-	MaxRD int
-}
 
 // Not best practice...
 // But it works fine and I frankly am OK with it.
@@ -25,15 +14,16 @@ var (
 
 	// global config
 	conf = struct {
+		// Last n msgs to consider when generating bot weights.
 		WLastN int
+		// Last n msgs to consider when generating responses.
 		PLastN int
-		MaxRU  int
-		MaxRD  int
+		// Max relation gain/loss per response.
+		MaxR float64
 	}{
 		WLastN: 10,
 		PLastN: 5,
-		MaxRU:  20,
-		MaxRD:  20,
+		MaxR:   20,
 	}
 
 	// All msgs.
@@ -50,13 +40,7 @@ var (
 	}()
 
 	// init sentiment analysis.
-	sent = func() sentiment.Models {
-		m, e := sentiment.Restore()
-		if e != nil {
-			panic("sentiment restore failed")
-		}
-		return m
-	}()
+	sent = govader.NewSentimentIntensityAnalyzer()
 
 	// Upper limits of consecutive bot responses to user msg.
 	botlim   = 1
@@ -74,7 +58,7 @@ var (
 
 	// Relations; user id <- bot id.
 	// Determines bot attitude towards user
-	rels   = make(map[string]map[string]int)
+	rels   = make(map[string]map[string]float64)
 	relsMu = &sync.Mutex{}
 
 	// bot id -> bot

@@ -12,7 +12,6 @@ import (
 	"time"
 
 	goaway "github.com/TwiN/go-away"
-	"github.com/cdipaolo/sentiment"
 	"github.com/olahol/melody"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -81,18 +80,18 @@ func main() {
 		ws := wbots[U.ID]
 
 		if rels[U.ID] == nil {
-			rels[U.ID] = make(map[string]int)
+			rels[U.ID] = make(map[string]float64)
 		}
 		rel := rels[U.ID]
 
 		id := bots[rand.Intn(len(bots))].USER.ID
 		for k := range botmap {
 			ws[k] = 1
-			rel[k] = 0
+			rel[k] = float64(rand.Intn(100) - 50)
 			if k == id {
 				n := rand.Intn(len(bots))
 				ws[k] += n
-				rel[k] = n * 100 / len(bots)
+				rel[k] = float64(n * 100 / len(bots))
 			}
 		}
 
@@ -216,7 +215,7 @@ func main() {
 			// check for user mentions
 			// else get last user msg
 			id := npcR.FindString(msg)
-			if id == "" {
+			if id == "" && strings.Contains(strings.ToLower(msg), "mortal") {
 				id = lU
 			} else {
 				id = "NPC" + id
@@ -225,14 +224,13 @@ func main() {
 			// update relation based on sentiment
 			if id != "" {
 				if rs, ok := rels[id]; ok {
-					s := "gained"
-					if r := rs[bot.USER.ID]; sent.SentimentAnalysis(msg, sentiment.English).Score > 0 {
-						r = min(100, r+rand.Intn(conf.MaxRU)+1)
-					} else {
-						r = max(-100, r-rand.Intn(conf.MaxRD)+1)
-						s = "lost"
+					r := sent.PolarityScores(msg).Compound
+					rs[bot.USER.ID] += max(-100, min(100, conf.MaxR*r))
+					if r != 0 {
+						go func() {
+							users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(r))))
+						}()
 					}
-					users[id].Write([]byte(bot.USER.MkMsg("r", s)))
 				}
 			}
 
