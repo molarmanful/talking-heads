@@ -99,6 +99,7 @@ func main() {
 		log.Info().Msg(O)
 
 		// send msg history to client
+
 		lms := msgs[len(msgs)-min(len(msgs), conf.MsgCh):]
 		ms := make([]string, len(lms))
 		for i, v := range lms {
@@ -107,6 +108,22 @@ func main() {
 
 		s.Write([]byte(U.MkMsg("w", fmt.Sprint(id, " ", M.Len()+len(bots))+"\n"+strings.Join(ms, "\n"))))
 		s.Set("chn", 1)
+
+		// send user list to client
+
+		bs := make([]string, len(bots))
+		for i, b := range bots {
+			bs[i] = b.USER.ID
+		}
+
+		us := make([]string, len(users))
+		i := 0
+		for k, _ := range users {
+			bs[i] = k
+			i++
+		}
+
+		s.Write([]byte(U.MkMsg("u", strings.Join(append(us, bs...), " "))))
 	})
 
 	M.HandleMessage(func(s *melody.Session, msg []byte) {
