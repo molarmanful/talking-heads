@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	goaway "github.com/TwiN/go-away"
 	"github.com/olahol/melody"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -50,9 +49,6 @@ func main() {
 	M := melody.New()
 	M.Config.PongWait = 25 * time.Second
 	M.Config.PingPeriod = M.Config.PongWait * 9 / 10
-
-	// TODO: improve?
-	GA := goaway.NewProfanityDetector()
 
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
@@ -99,11 +95,14 @@ func main() {
 		relsMu.Unlock()
 
 		// send msg history to client
-		ms := make([]string, len(msgs))
-		for i, v := range msgs {
+		lms := msgs[len(msgs)-min(len(msgs), conf.MsgCh):]
+		ms := make([]string, len(lms))
+		for i, v := range lms {
 			ms[i] = v.String()
 		}
+
 		s.Write([]byte(U.MkMsg("w", id+"\n"+strings.Join(ms, "\n"))))
+		s.Set("chn", 1)
 
 		O := U.MkMsg("+", "")
 		M.Broadcast([]byte(O))
@@ -127,7 +126,6 @@ func main() {
 
 		// user sent msg
 		case "m":
-
 			// prevent empty
 			// done client-side but also here for good measure
 			m := strings.Join(b, " ")
@@ -135,11 +133,9 @@ func main() {
 				return
 			}
 
-			msg1 := GA.Censor(removeAccents(m))
-
 			// store + broadcast msg
-			m1 := &Msg{U, msg1}
-			O := U.MkMsg("m", msg1)
+			m1 := &Msg{U, m}
+			O := U.MkMsg("m", m)
 			msgsMu.Lock()
 			msgs = append(msgs, m1)
 			msgsMu.Unlock()
@@ -150,6 +146,36 @@ func main() {
 			botlimMu.Lock()
 			botlim = botlimw[rand.Intn(len(botlimw))]
 			botlimMu.Unlock()
+
+		// user needs more messages
+		case "g":
+			v, x := s.Get("chn")
+			if !x {
+				return
+			}
+
+			// locks exist client-side but also here for good measure
+			w, x := s.Get("chnL")
+			if x && w.(bool) {
+				return
+			}
+			s.Set("chnL", true)
+
+			chn := v.(int)
+			lms := msgs[len(msgs)-min(len(msgs), (chn+1)*conf.MsgCh) : len(msgs)-min(len(msgs), chn*conf.MsgCh)]
+			if len(lms) == 0 {
+				return
+			}
+
+			ms := make([]string, len(lms))
+			for i, v := range lms {
+				ms[i] = v.String()
+			}
+
+			s.Write([]byte(U.MkMsg("g", strings.Join(ms, "\n"))))
+			chn++
+			s.Set("chn", chn)
+			s.Set("chnL", false)
 		}
 	})
 
@@ -224,11 +250,12 @@ func main() {
 			// update relation based on sentiment
 			if id != "" {
 				if rs, ok := rels[id]; ok {
-					r := sent.PolarityScores(msg).Compound
-					rs[bot.USER.ID] += max(-100, min(100, conf.MaxR*r))
+					s := sent.PolarityScores(msg).Compound
+					r := rs[bot.USER.ID]
+					r = max(-100, min(100, r+conf.MaxR*s))
 					if r != 0 {
 						go func() {
-							users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(r))))
+							users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
 						}()
 					}
 				}

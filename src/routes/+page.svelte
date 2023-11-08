@@ -11,13 +11,17 @@
   let idc = {}
   let ws
   let fav = 'NONE'
+  let wslock = false
+  let scrollB
+  let keepScroll
 
   let D = {}
-  D.msg = (idc, m) => out.update(o => o.concat({ type: 'msg', idc, m }))
-  D.err = m => out.update(o => o.concat({ type: 'err', m }))
-  D.info = m => out.update(o => o.concat({ type: 'info', m }))
-  D.succ = m => out.update(o => o.concat({ type: 'succ', m }))
-  D.tpush = idc => typ.update(o => o.concat(idc))
+  D.msg = (idc, m) => out.update(o => [...o, { type: 'msg', idc, m }])
+  D.gsm = (idc, m) => out.update(o => [{ type: 'msg', idc, m }, ...o])
+  D.err = m => out.update(o => [...o, { type: 'err', m }])
+  D.info = m => out.update(o => [...o, { type: 'info', m }])
+  D.succ = m => out.update(o => [...o, { type: 'succ', m }])
+  D.tpush = idc => typ.update(o => [...o, idc])
   D.tpop = id => typ.update(o => o.filter(a => a.id != id))
 
   let parse = data => {
@@ -54,6 +58,17 @@
         )
       },
 
+      g() {
+        b = b.join` `.split`\n`.reverse()
+        for (let x of b) {
+          let [id, c, ...s] = x.split` `
+          D.gsm({ id, c }, s.join` `)
+        }
+        console.log(b)
+        wslock = false
+        keepScroll()
+      },
+
       e() {
         D.err(b.join` `)
       },
@@ -84,6 +99,6 @@
 <main class="flex-(~ col) screen max-screen p-(8 t-3) gap-5 overflow-hidden">
   <Splash bind:splash />
   <Header {splash} />
-  <Out {out} {typ} />
-  <In {D} {fav} {idc} {splash} {value} {ws} />
+  <Out {out} {typ} {ws} bind:wslock bind:scrollB bind:keepScroll />
+  <In {D} {fav} {idc} {scrollB} {splash} {value} {ws} />
 </main>

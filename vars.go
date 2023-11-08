@@ -20,10 +20,13 @@ var (
 		PLastN int
 		// Max relation gain/loss per response.
 		MaxR float64
+		// Number of msgs to send per scroll
+		MsgCh int
 	}{
 		WLastN: 10,
 		PLastN: 5,
 		MaxR:   20,
+		MsgCh:  69,
 	}
 
 	// All msgs.
@@ -43,7 +46,7 @@ var (
 	sent = govader.NewSentimentIntensityAnalyzer()
 
 	// Upper limits of consecutive bot responses to user msg.
-	botlim   = 1
+	botlim   = 0
 	botlimMu = &sync.Mutex{}
 	botlimw  = []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3}
 

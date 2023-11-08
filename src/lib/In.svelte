@@ -10,6 +10,8 @@
   export let idc
   export let splash = true
   export let fav
+  export let scrollB
+
   $: if (!splash && el)
     requestAnimationFrame(() => {
       el.focus()
@@ -48,6 +50,7 @@
 
     if (v && v.length <= 250) {
       ws.send('m ' + value.slice(0, 250))
+      scrollB()
       value = ''
     }
   }}
