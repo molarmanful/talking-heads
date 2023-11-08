@@ -13,7 +13,7 @@
   export const scrollB = () => {
     if (el)
       requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight
+        el.scrollTop = el.scrollHeight + 1
       })
   }
   export const keepScroll = () => {
@@ -27,7 +27,7 @@
 
 <div
   bind:this={el}
-  class="flex-(1 ~ col) p-8 gap-3 bord overflow-auto"
+  class="flex-1 p-8 bord overflow-auto"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {

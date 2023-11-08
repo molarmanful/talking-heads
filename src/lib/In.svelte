@@ -38,13 +38,14 @@
       else D.err('unknown command')
 
       value = ''
+      scrollB()
       return
     }
 
     if (v && v.length <= 250) {
       ws.send('m ' + value.slice(0, 250))
-      scrollB()
       value = ''
+      scrollB()
     }
   }}
 >
