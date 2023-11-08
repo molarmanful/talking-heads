@@ -27,7 +27,7 @@
 
 <div
   bind:this={el}
-  class="flex-1 p-8 bord overflow-auto"
+  class="flex-(1 ~ col) p-8 gap-3 bord overflow-auto"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {
@@ -39,7 +39,7 @@
   use:useResizeObserver
 >
   {#each $out as { type, idc, m }}
-    <div transition:fly={{ duration: 300, x: 40 }}>
+    <div transition:fly={{ duration: 300, y: 40 }}>
       {#if type == 'msg'}
         <Msg class="text-gray-300">
           <strong
@@ -70,10 +70,15 @@
   {/each}
 
   {#each $typ as { id, c }}
-    <p class="text-sm" transition:fly={{ duration: 300, y: 40 }}>
-      &gt; <span style:color={c} style:background-color={goodBG(c)}>{id}</span
-      >...
-    </p>
+    <div transition:fly={{ duration: 300, y: 40 }}>
+      <Msg class="text-sm">
+        <svelte:fragment slot="h">&gt</svelte:fragment>
+        <svelte:fragment slot="b"
+          ><span style:color={c} style:background-color={goodBG(c)}>{id}</span
+          >...</svelte:fragment
+        >
+      </Msg>
+    </div>
   {/each}
 
   <div style:overflow-anchor="auto" class="h-[1px]" />
