@@ -30,7 +30,7 @@
 
 <div
   bind:this={el}
-  class="flex-1 p-(8 r-md-[31%]) bord overflow-auto"
+  class="flex-1 p-8 bord overflow-auto"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {

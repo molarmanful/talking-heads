@@ -21,7 +21,7 @@
   on:submit|preventDefault={() => {
     let v = value.trim()
 
-    let m = /^\/\w+/.exec(v)
+    let m = /^\/\S+/.exec(v)
     if (m) {
       D.info(m)
       m = m[0].slice(1)
