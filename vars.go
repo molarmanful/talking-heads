@@ -8,10 +8,39 @@ import (
 	"github.com/schollz/closestmatch"
 )
 
+type Config struct {
+	// Last n msgs to consider when generating bot weights.
+	WLastN int
+	// Last n msgs to consider when generating responses.
+	PLastN int
+	// Max relation gain per response.
+	MaxRU int
+	// Max relation loss per response.
+	MaxRD int
+}
+
+// Not best practice...
+// But it works fine and I frankly am OK with it.
 var (
+
+	// global config
+	conf = struct {
+		WLastN int
+		PLastN int
+		MaxRU  int
+		MaxRD  int
+	}{
+		WLastN: 10,
+		PLastN: 5,
+		MaxRU:  20,
+		MaxRD:  20,
+	}
+
+	// All msgs.
 	msgs   = []*Msg{}
 	msgsMu = &sync.Mutex{}
 
+	// Init fuzzy matcher.
 	CM = func() *closestmatch.ClosestMatch {
 		bs := make([]string, len(bots))
 		for i, b := range bots {
@@ -20,6 +49,7 @@ var (
 		return closestmatch.New(bs, []int{2, 3, 4})
 	}()
 
+	// init sentiment analysis.
 	sent = func() sentiment.Models {
 		m, e := sentiment.Restore()
 		if e != nil {
@@ -28,16 +58,26 @@ var (
 		return m
 	}()
 
+	// Upper limits of consecutive bot responses to user msg.
 	botlim   = 1
 	botlimMu = &sync.Mutex{}
 	botlimw  = []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3}
 
+	// Base weights; user id <- bot id.
+	// Determines chance of bot response to user msg.
 	wbots   = make(map[string]map[string]int)
 	wbotsMu = &sync.Mutex{}
 
+	// client id -> client session
 	users   = make(map[string]*melody.Session)
 	usersMu = sync.Mutex{}
 
+	// Relations; user id <- bot id.
+	// Determines bot attitude towards user
+	rels   = make(map[string]map[string]int)
+	relsMu = &sync.Mutex{}
+
+	// bot id -> bot
 	botmap = func() map[string]*Bot {
 		m := make(map[string]*Bot)
 		for _, bot := range bots {
@@ -46,9 +86,7 @@ var (
 		return m
 	}()
 
-	rels   = make(map[string]map[string]int)
-	relsMu = &sync.Mutex{}
-
+	// Array of bots + their identity prompts.
 	bots = []*Bot{
 		{&User{ID: "LYSSA", COLOR: "#800080"}, "You are Lyssa, the Greek god of mad rage and frenzy. You are cold and manipulative, always seeking to create insanity through underhanded tactics."},
 		{&User{ID: "HUITZILOPOCHTLI", COLOR: "#FF0000"}, "You are Huitzilopochtli, the Aztec solar and war deity of sacrifice. You are violent and hard to please, always seeking blood sacrifices, and you never take no for an answer."},

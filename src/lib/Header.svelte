@@ -7,7 +7,7 @@
 {#if !splash}
   <h3
     class="text-center font-bold underline"
-    transition:fly={{ duration: 200, y: -40 }}
+    transition:fly={{ duration: 300, y: -40 }}
   >
     <a
       class="hover:text-white transition-colors"

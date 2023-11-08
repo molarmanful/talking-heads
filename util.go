@@ -16,8 +16,11 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
+// Generates bot weights based on recent msgs.
+// Also returns last user to send a msg (for later use).
 func calcWs(lms []*Msg) ([]*Bot, string) {
 
+	// get last user + their weights
 	ws := make(map[string]int)
 	lU := ""
 	for _, m := range lms {
@@ -32,16 +35,20 @@ func calcWs(lms []*Msg) ([]*Bot, string) {
 	}
 
 	for i, m := range lms {
+		// get mentioned bots
+		// may gen false positives, but that is fine
 		cn := CM.ClosestN(strings.ToLower(removeAccents(m.BODY)), 5)
 		for j, id := range cn {
 			ws[id] += max(0, len(bots)/2+10-i*i-j*j)
 		}
 
+		// add weight to bot w/ recent msg
 		if w, ok := ws[m.USER.ID]; ok {
 			w += len(bots) / 2
 		}
 	}
 
+	// replicate bots into weighted list
 	bs := make([]*Bot, 0, len(bots)*2)
 	for id, n := range ws {
 		for j := 0; j < n; j++ {
@@ -52,42 +59,46 @@ func calcWs(lms []*Msg) ([]*Bot, string) {
 	return bs, lU
 }
 
-func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {
+// Requests response from Replicate API proxy.
+// NOTE: is synchronous.
+func reqRes(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 
 	id := bot.USER.ID
 	log.Info().Msg("Q: " + id)
 
-	r := tagMsgs(id, 7)
-	j, e := json.Marshal(map[string]interface{}{
-		// "version": "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
-		"version": "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
-		"input": map[string]interface{}{
-			"prompt": r,
-			"system_prompt": strings.Join([]string{
+	r := tagMsgs(id, conf.PLastN)
+	j, e := json.Marshal(&ReqR{
+		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
+		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
+		Input: &ReqRInput{
+			Prompt: r,
+			SystemPrompt: strings.Join([]string{
 				bot.PROMPT,
 				relstr, "\n",
 				`Generate a concise one-sentence response to the conversation as ` + id + `, without using speaker labels and ensuring relevance to the context provided.`,
 				`If you understand the prompt, start your response with "RES:".`,
 				`Example responses:\nRES: Witness my power, mere mortal!\nRES: You will suffer for your transgressions, NPC#F69420.\nRES: ZEUS, I find you tolerable.`,
 			}, " "),
-			"max_new_tokens":     100,
-			"min_new_tokens":     -1,
-			"temperature":        .9,
-			"repetition_penalty": 1.18,
-			"top_k":              30,
-			"top_p":              .73,
+			MaxNewTokens:      100,
+			MinNewTokens:      -1,
+			Temperature:       .9,
+			RepetitionPenalty: 1.18,
+			TopK:              30,
+			TopP:              .73,
 		},
 	})
 	if e != nil {
 		return "", e
 	}
 
+	// req
 	req, e := http.NewRequest("POST", "https://replicate-api-proxy.glitch.me/create_n_get", bytes.NewBuffer(j))
 	if e != nil {
 		return "", e
 	}
 	req.Header.Add("Content-Type", "application/json")
 
+	// res
 	M.Broadcast([]byte(bot.USER.MkMsg("+t", "")))
 	client := &http.Client{}
 	res, e := client.Do(req)
@@ -100,7 +111,7 @@ func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 		return "", errors.New(res.Status)
 	}
 
-	post := &Post{}
+	post := &ResR{}
 	if e = json.NewDecoder(res.Body).Decode(post); e != nil {
 		return "", e
 	}
@@ -110,6 +121,8 @@ func postReq(M *melody.Melody, bot *Bot, relstr string) (string, error) {
 	return strings.TrimSpace(strings.TrimPrefix(O, "RES:")), nil
 }
 
+// Converts last n messages to tagged prompt.
+// Non [bot w/ id] answers are tagged.
 func tagMsgs(id string, n int) string {
 
 	n = min(len(msgs), n)
@@ -138,6 +151,7 @@ func tagMsgs(id string, n int) string {
 	return O
 }
 
+// Converts relations w/ recent users to prompt.
 func relStr(lms []*Msg, id string) string {
 
 	uniq := make(map[string]bool)
@@ -172,6 +186,7 @@ func relStr(lms []*Msg, id string) string {
 	return "You " + strings.Join(rs, ", ") + "."
 }
 
+// Remove Unicode accents from string.
 func removeAccents(s string) string {
 
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
@@ -183,7 +198,25 @@ func removeAccents(s string) string {
 	return o
 }
 
-type Post struct {
+// Replicate API POST request.
+type ReqR struct {
+	Version string     `json:"version"`
+	Input   *ReqRInput `json:"input"`
+}
+
+type ReqRInput struct {
+	Prompt            string  `json:"prompt"`
+	SystemPrompt      string  `json:"system_prompt"`
+	MaxNewTokens      int     `json:"max_new_tokens"`
+	MinNewTokens      int     `json:"min_new_tokens"`
+	Temperature       float64 `json:"temperature"`
+	RepetitionPenalty float64 `json:"repetition_penalty"`
+	TopK              int     `json:"top_k"`
+	TopP              float64 `json:"top_p"`
+}
+
+// Replicate API POST response.
+type ResR struct {
 	Output []string `json:"output"`
 }
 
@@ -192,6 +225,7 @@ type Msg struct {
 	BODY string
 }
 
+// Get msg as string.
 func (m *Msg) String() string {
 	return m.USER.String() + " " + m.BODY
 }
@@ -201,16 +235,12 @@ type Bot struct {
 	PROMPT string
 }
 
-type WPair struct {
-	Weights []int
-	Sum     int
-}
-
 type User struct {
 	ID    string
 	COLOR string
 }
 
+// Gen new user.
 func NewUser() *User {
 
 	id, e := nanoid.Generate("0123456789ABCDEF", 6)
@@ -220,10 +250,12 @@ func NewUser() *User {
 	return &User{"NPC#" + id, "#" + id}
 }
 
+// Get user as string.
 func (u *User) String() string {
 	return u.ID + " " + u.COLOR
 }
 
+// Gen msg from header + user + body.
 func (u *User) MkMsg(h string, b string) string {
 	return h + " " + u.String() + " " + b
 }

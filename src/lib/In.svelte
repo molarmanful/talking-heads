@@ -8,7 +8,6 @@
   export let value
   let el
   export let idc
-  $: console.log(idc)
   export let splash = true
   export let fav
   $: if (!splash && el)
@@ -24,6 +23,7 @@
 
     let m = /^\/\w+/.exec(v)
     if (m) {
+      D.info(m)
       m = m[0].slice(1)
 
       let f = {
@@ -38,6 +38,7 @@
       }
       f['?'] = f.h = f.help
       f['i'] = f.whoami
+
       if (f[m]) f[m]()
       else D.err('unknown command')
 
@@ -57,12 +58,12 @@
       style:background-color={goodBG(idc.c)}
       class="h-full p-2 bord relative"
       for="in"
-      transition:fly={{ duration: 200, x: -40 }}
+      transition:fly={{ duration: 300, x: -40 }}
     >
       {idc.id}
     </label>
 
-    <div class="relative flex-1" transition:fly={{ duration: 200, y: 40 }}>
+    <div class="relative flex-1" transition:fly={{ duration: 300, y: 40 }}>
       <input
         bind:this={el}
         id="in"
@@ -86,7 +87,7 @@
     <button
       class="p-2 bg-transparent bord"
       disabled={splash}
-      transition:fly={{ duration: 200, x: 40 }}
+      transition:fly={{ duration: 300, x: 40 }}
     >
       send
     </button>

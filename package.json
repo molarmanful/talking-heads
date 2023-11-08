@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ctrl/tinycolor": "^4.0.2",
+    "@grail-ui/svelte": "^0.11.0",
     "@sveltejs/adapter-static": "^2.0.3",
     "@sveltejs/kit": "^1.27.3",
     "@unocss/extractor-svelte": "^0.57.2",

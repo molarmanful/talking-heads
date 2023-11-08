@@ -16,6 +16,7 @@
   D.msg = (idc, m) => out.update(o => o.concat({ type: 'msg', idc, m }))
   D.err = m => out.update(o => o.concat({ type: 'err', m }))
   D.info = m => out.update(o => o.concat({ type: 'info', m }))
+  D.succ = m => out.update(o => o.concat({ type: 'succ', m }))
   D.tpush = idc => typ.update(o => o.concat(idc))
   D.tpop = id => typ.update(o => o.filter(a => a.id != id))
 
@@ -48,7 +49,7 @@
       },
 
       r() {
-        D.info(`You have ${b.join` `} favor with ${id}.`)
+        D[b[0] == 'lost' ? 'err' : 'succ'](`You ${b[0]} favor with ${id}.`)
       },
 
       e() {
@@ -73,7 +74,7 @@
     })
 
     ws.addEventListener('close', () => {
-      D.err('disconnected', 'red')
+      D.err('disconnected')
     })
   })
 </script>
