@@ -27,7 +27,7 @@
 
 <div
   bind:this={el}
-  class="flex-1 p-8 bord overflow-auto"
+  class="flex-1 p-8 bord overflow-auto break-anywhere"
   ovr-parent
   on:scroll={() => {
     if (el.scrollTop <= 0 && !wslock) {
@@ -43,9 +43,9 @@
       {#if type == 'msg'}
         <Msg class="text-gray-300">
           <strong
+            slot="h"
             style:color={idc.c}
-            style:background-color={goodBG(idc.c)}
-            slot="h">{idc.id}</strong
+            style:background-color={goodBG(idc.c)}>{idc.id}</strong
           >
           <svelte:fragment slot="b">{m}</svelte:fragment>
         </Msg>

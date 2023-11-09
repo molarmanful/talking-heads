@@ -2,10 +2,11 @@
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
 
-  import { Header, In, Out, Splash } from '$lib'
+  import { Header, In, Out, Splash, Users } from '$lib'
 
   let out = writable([])
   let typ = writable([])
+  let users = writable(new Map())
   let splash = true
   let value = ''
   let idc = {}
@@ -31,20 +32,25 @@
     let f = {
       ['+']() {
         idc = { id, c }
+        users.update(o => o.set(id, c))
       },
 
-      ['w']() {
-        ;[h, ...b] = b.join` `.split`\n`.filter(x => x.trim())
-        let cnt
-        ;[fav, cnt] = h.split` `
+      w() {
+        ;[fav, ...b] = b.join` `.split`\n`.filter(x => x.trim())
         for (let x of b) {
           let [id, c, ...s] = x.split` `
           D.msg({ id, c }, s.join` `)
         }
         D.info(
-          `Welcome, ${idc.id} of ${fav}. There are ${cnt} entities online.`
+          `Welcome, ${id} of ${fav}. Type /help for a list of available commands.`
         )
-        D.info('Type /help for a list of available commands.')
+      },
+
+      u() {
+        for (let x of b.join` `.split`\n`) {
+          let [id, c] = x.split` `
+          users.update(o => o.set(id, c))
+        }
       },
 
       ['+t']() {
@@ -80,7 +86,9 @@
         D.err(b.join` `)
       },
 
-      ['-']() {},
+      ['-']() {
+        users.update(o => (o.delete(id), o))
+      },
     }
 
     if (f[h]) f[h]()
@@ -106,6 +114,9 @@
 <main class="flex-(~ col) screen max-screen p-(8 t-3) gap-5 overflow-hidden">
   <Splash bind:splash />
   <Header {splash} />
-  <Out {out} {typ} {ws} bind:wslock bind:scrollB bind:keepScroll />
+  <div class="flex-(~ 1) overflow-hidden">
+    <Out {out} {typ} {ws} bind:wslock bind:scrollB bind:keepScroll />
+    <Users {splash} {users} />
+  </div>
   <In {D} {fav} {idc} {scrollB} {splash} {value} {ws} />
 </main>

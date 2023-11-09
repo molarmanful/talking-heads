@@ -95,7 +95,7 @@ func main() {
 		relsMu.Unlock()
 
 		O := U.MkMsg("+", "")
-		M.Broadcast([]byte(O))
+		M.BroadcastOthers([]byte(O), s)
 		log.Info().Msg(O)
 
 		// send msg history to client
@@ -106,24 +106,28 @@ func main() {
 			ms[i] = v.String()
 		}
 
-		s.Write([]byte(U.MkMsg("w", fmt.Sprint(id, " ", M.Len()+len(bots))+"\n"+strings.Join(ms, "\n"))))
+		s.Write([]byte(U.MkMsg("w", id+"\n"+strings.Join(ms, "\n"))))
 		s.Set("chn", 1)
 
 		// send user list to client
 
 		bs := make([]string, len(bots))
 		for i, b := range bots {
-			bs[i] = b.USER.ID
+			bs[i] = b.USER.String()
 		}
 
 		us := make([]string, len(users))
 		i := 0
-		for k, _ := range users {
-			bs[i] = k
+		for _, s1 := range users {
+			v, x := s1.Get("user")
+			if !x {
+				continue
+			}
+			us[i] = v.(*User).String()
 			i++
 		}
 
-		s.Write([]byte(U.MkMsg("u", strings.Join(append(us, bs...), " "))))
+		s.Write([]byte(U.MkMsg("u", strings.Join(append(bs, us...), "\n"))))
 	})
 
 	M.HandleMessage(func(s *melody.Session, msg []byte) {
