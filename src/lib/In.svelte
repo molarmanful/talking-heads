@@ -12,7 +12,7 @@
 </script>
 
 <form
-  class="flex-(~ row) gap-3"
+  class="flex-(~ row) gap-2 lg:gap-3"
   on:submit|preventDefault={() => {
     let v = value.trim()
 
@@ -63,7 +63,7 @@
       />
 
       <div
-        class="absolute flex inset-(r-1 t-1) flex-items-center flex-justify-items-center text-sm"
+        class="absolute flex right-1 top-1 flex-items-center flex-justify-items-center text-sm"
       >
         <span style:color={value.length > 240 ? 'red' : 'inherit'}>
           {value.length}/250

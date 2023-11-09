@@ -8,7 +8,7 @@
 
 {#if !splash}
   <div
-    class="w-44 min-h-0 ml-5 p-3 overflow-(x-hidden y-auto) bord text-sm lt-lg-hidden"
+    class="w-44 min-h-0 ml-5 p-3 overflow-(x-hidden y-auto) bord text-sm lt-lg:hidden"
     transition:fade={{ duration: 300, x: 40 }}
   >
     <p class="mb-3">Online - {$users.size}</p>
