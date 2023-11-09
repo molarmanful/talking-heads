@@ -23,6 +23,7 @@
   D.warn = m => out.update(o => [...o, { type: 'warn', m }])
   D.info = m => out.update(o => [...o, { type: 'info', m }])
   D.succ = m => out.update(o => [...o, { type: 'succ', m }])
+  D.send = m => out.update(o => [...o, { type: 'send', m }])
   D.tpush = idc => typ.update(o => [...o, idc])
   D.tpop = id => typ.update(o => o.filter(a => a.id != id))
 
@@ -31,11 +32,11 @@
 
     let f = {
       ['+']() {
-        idc = { id, c }
         users.update(o => o.set(id, c))
       },
 
       w() {
+        idc = { id, c }
         ;[fav, ...b] = b.join` `.split`\n`.filter(x => x.trim())
         for (let x of b) {
           let [id, c, ...s] = x.split` `

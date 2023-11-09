@@ -18,7 +18,7 @@
 
     let m = /^\/\S+/.exec(v)
     if (m) {
-      D.info(m)
+      D.send(m)
       m = m[0].slice(1)
 
       let f = {

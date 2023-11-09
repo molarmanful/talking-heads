@@ -62,7 +62,9 @@
               : '',
           ].join` `}
         >
-          <svelte:fragment slot="h">&gt</svelte:fragment>
+          <svelte:fragment slot="h"
+            >{type == 'send' ? '<' : '>'}</svelte:fragment
+          >
           <svelte:fragment slot="b">{m}</svelte:fragment>
         </Msg>
       {/if}
@@ -72,7 +74,7 @@
   {#each $typ as { id, c }}
     <div transition:fly={{ duration: 300, y: 40 }}>
       <Msg class="text-sm">
-        <svelte:fragment slot="h">&gt</svelte:fragment>
+        <svelte:fragment slot="h">{'>'}</svelte:fragment>
         <svelte:fragment slot="b"
           ><span style:color={c} style:background-color={goodBG(c)}>{id}</span
           >...</svelte:fragment
