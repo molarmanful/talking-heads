@@ -222,10 +222,7 @@ func main() {
 		npcR := regexp.MustCompile(`(?i)#[\dABCDEF]{6}`)
 
 		for {
-			// wait randomly
-			// feels more natural
-			// also prevents for loop from running too fast
-			time.Sleep(time.Duration(float32(rand.Intn(11))/10+.5) * time.Second)
+			time.Sleep(0)
 
 			if botlim <= 0 || len(msgs) == 0 || M.Len() == 0 {
 				continue
@@ -236,8 +233,14 @@ func main() {
 			rs, lU := calcWs(lms)
 			bot := rs[rand.Intn(len(rs))]
 			if bot.USER.ID == msgs[len(msgs)-1].USER.ID {
+				botlim = 0
 				continue
 			}
+
+			// wait randomly
+			// feels more natural
+			// also prevents for loop from running too fast
+			time.Sleep(time.Duration(float32(rand.Intn(11))/10+.5) * time.Second)
 
 			// API req/res
 			msg, e := reqRes(M, bot, relStr(lms, bot.USER.ID))
