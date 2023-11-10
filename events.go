@@ -105,8 +105,8 @@ func (ST *State) WSMsg(s *melody.Session, msg []byte) {
 
 	// extract header + body
 	hb := strings.SplitN(string(msg), " ", 2)
+	println(string(msg))
 	h := hb[0]
-	b := hb[1]
 
 	switch h {
 
@@ -114,6 +114,7 @@ func (ST *State) WSMsg(s *melody.Session, msg []byte) {
 	case "m":
 		// prevent empty
 		// done client-side but also here for good measure
+		b := hb[1]
 		if strings.TrimSpace(b) == "" {
 			return
 		}

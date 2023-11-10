@@ -19,7 +19,7 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	go.uber.org/ratelimit v0.3.0 // indirect
+	go.uber.org/ratelimit v0.3.0
 	golang.org/x/sys v0.14.0 // indirect
 	gonum.org/v1/gonum v0.8.2 // indirect
 )
