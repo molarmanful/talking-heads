@@ -54,7 +54,6 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("fly-replay", "app=talking-heads;elsewhere=true")
 		M.HandleRequest(w, r)
 	})
 
@@ -100,7 +99,6 @@ func main() {
 
 		O := U.MkMsg("+", "")
 		M.BroadcastOthers([]byte(O), s)
-		log.Info().Msg(O)
 
 		// send msg history to client
 
@@ -225,8 +223,6 @@ func main() {
 
 		O := U.MkMsg("-", "")
 		M.BroadcastOthers([]byte(O), s)
-
-		log.Info().Msg(O)
 	})
 
 	// separate goroutine for bots
