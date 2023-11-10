@@ -15,6 +15,7 @@ import (
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"go.uber.org/ratelimit"
 )
 
 func main() {
@@ -60,6 +61,8 @@ func main() {
 
 		U := NewUser()
 		s.Set("user", U)
+
+		s.Set("rl", ratelimit.New(5))
 
 		usersMu.Lock()
 		users[U.ID] = s
@@ -132,7 +135,16 @@ func main() {
 
 	M.HandleMessage(func(s *melody.Session, msg []byte) {
 
-		v, x := s.Get("user")
+		// rate-limit
+		v, x := s.Get("rl")
+		if !x {
+			log.Warn().Msg("rl not found")
+			return
+		}
+		rl := v.(ratelimit.Limiter)
+		rl.Take()
+
+		v, x = s.Get("user")
 		if !x {
 			return
 		}

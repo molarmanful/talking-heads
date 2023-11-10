@@ -13,11 +13,13 @@ require (
 )
 
 require (
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	go.uber.org/ratelimit v0.3.0 // indirect
 	golang.org/x/sys v0.14.0 // indirect
 	gonum.org/v1/gonum v0.8.2 // indirect
 )
