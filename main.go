@@ -54,6 +54,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("fly-replay", "app=talking-heads;elsewhere=true")
 		M.HandleRequest(w, r)
 	})
 
