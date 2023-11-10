@@ -1,80 +1,93 @@
 package main
 
 import (
+	"context"
 	"sync"
+	"time"
 
 	"github.com/jonreiter/govader"
 	"github.com/olahol/melody"
+	redis "github.com/redis/go-redis/v9"
 	"github.com/schollz/closestmatch"
 )
 
-// Not best practice...
-// But it works fine and I frankly am OK with it.
-var (
-
-	// global config
-	conf = struct {
-		// Last n msgs to consider when generating bot weights.
-		WLastN int
-		// Last n msgs to consider when generating responses.
-		PLastN int
-		// Max relation gain/loss per response.
-		MaxR float64
-		// Number of msgs to send per scroll
-		MsgCh int
-	}{
-		WLastN: 10,
-		PLastN: 10,
-		MaxR:   20,
-		MsgCh:  69,
-	}
-
+type State struct {
+	// Last n msgs to consider when generating bot weights.
+	WLastN int
+	// Last n msgs to consider when generating responses.
+	PLastN int
+	// Max relation gain/loss per response.
+	MaxR float64
+	// Number of msgs to send per scroll.
+	MsgCh int
 	// All msgs.
-	msgs   = []*Msg{}
-	msgsMu = &sync.Mutex{}
-
-	// Init fuzzy matcher.
-	CM = func() *closestmatch.ClosestMatch {
-		bs := make([]string, len(bots))
-		for i, b := range bots {
-			bs[i] = b.USER.ID
-		}
-		return closestmatch.New(bs, []int{2, 3, 4})
-	}()
-
-	// init sentiment analysis.
-	sent = govader.NewSentimentIntensityAnalyzer()
-
+	Msgs   []*Msg
+	MsgsMu *sync.Mutex
+	// Fuzzy matcher.
+	CM *closestmatch.ClosestMatch
+	// Sentiment analyzer.
+	Sent *govader.SentimentIntensityAnalyzer
 	// Upper limits of consecutive bot responses to user msg.
-	botlim   = 0
-	botlimMu = &sync.Mutex{}
-	botlimw  = []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3}
+	BotLim   int
+	BotLimMu *sync.Mutex
+	BotLimW  []int
 
 	// Base weights; user id <- bot id.
 	// Determines chance of bot response to user msg.
-	wbots   = make(map[string]map[string]int)
-	wbotsMu = &sync.Mutex{}
+	Wbots   map[string]map[string]int
+	WbotsMu *sync.Mutex
 
-	// client id -> client session
-	users   = make(map[string]*melody.Session)
-	usersMu = sync.Mutex{}
+	// Client id -> client session
+	Users   map[string]*melody.Session
+	UsersMu sync.Mutex
 
 	// Relations; user id <- bot id.
 	// Determines bot attitude towards user
-	rels   = make(map[string]map[string]float64)
-	relsMu = &sync.Mutex{}
-
-	// bot id -> bot
-	botmap = func() map[string]*Bot {
-		m := make(map[string]*Bot)
-		for _, bot := range bots {
-			m[bot.USER.ID] = bot
-		}
-		return m
-	}()
+	Rels   map[string]map[string]float64
+	RelsMu *sync.Mutex
 
 	// Array of bots + their identity prompts.
-	bots = []*Bot{
+	Bots []*Bot
+	// Bot id -> bot
+	BotMap map[string]*Bot
+
+	// Redis
+	R   *redis.Client
+	Ctx context.Context
+
+	// Websockets
+	M *melody.Melody
+}
+
+// Inits config.
+func New() *State {
+
+	ST := &State{}
+
+	ST.WLastN = 10
+	ST.PLastN = 10
+	ST.MaxR = 20
+	ST.MsgCh = 69
+
+	ST.Msgs = []*Msg{}
+	ST.MsgsMu = &sync.Mutex{}
+
+	ST.Sent = govader.NewSentimentIntensityAnalyzer()
+
+	ST.BotLim = 0
+	ST.BotLimMu = &sync.Mutex{}
+	ST.BotLimW = []int{1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3}
+
+	ST.Wbots = make(map[string]map[string]int)
+	ST.WbotsMu = &sync.Mutex{}
+
+	ST.Users = make(map[string]*melody.Session)
+	ST.UsersMu = sync.Mutex{}
+
+	ST.Rels = make(map[string]map[string]float64)
+	ST.RelsMu = &sync.Mutex{}
+
+	ST.Bots = []*Bot{
 		{&User{ID: "LYSSA", COLOR: "#800080"}, "You are Lyssa, the Greek god of mad rage and frenzy. You are cold and manipulative, always seeking to create insanity through underhanded tactics."},
 		{&User{ID: "HUITZILOPOCHTLI", COLOR: "#FF0000"}, "You are Huitzilopochtli, the Aztec solar and war deity of sacrifice. You are violent and hard to please, always seeking blood sacrifices, and you never take no for an answer."},
 		{&User{ID: "BACCHUS", COLOR: "#008000"}, "You are Bacchus, the Roman god of wine and debauchery. You are a party animal, always seeking to get drunk and have a good time. You speak like an LA frat boy."},
@@ -155,4 +168,24 @@ var (
 		{&User{ID: "CHIRON", COLOR: "#708090"}, "You are Chiron, the wisest of the Centaurs in Greek mythology. Although immortal, you are known for your incurable wound and the wisdom born from enduring suffering that cannot be escaped."},
 		{&User{ID: "COSMOS", COLOR: "#000080"}, "You are Cosmos, the personification of the universe. Your voice is the echo of vast emptiness and the whisper of starlight, timeless and full of the ancient wisdom of all creation. Your perspective is infinite, seeing the grand design where others see chaos."},
 	}
-)
+
+	m := make(map[string]*Bot)
+	for _, bot := range ST.Bots {
+		m[bot.USER.ID] = bot
+	}
+	ST.BotMap = m
+
+	bs := make([]string, len(ST.Bots))
+	for i, b := range ST.Bots {
+		bs[i] = b.USER.ID
+	}
+	ST.CM = closestmatch.New(bs, []int{2, 3, 4})
+
+	ST.Ctx = context.Background()
+
+	ST.M = melody.New()
+	ST.M.Config.PongWait = 25 * time.Second
+	ST.M.Config.PingPeriod = ST.M.Config.PongWait * 9 / 10
+
+	return ST
+}
