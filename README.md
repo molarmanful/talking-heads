@@ -14,8 +14,8 @@ chatroom the roles flip. AI are the gods, and we their objects of curiosity.
 
 ## Features
 
-- Sentiment analysis + dynamic prompt engineering to create "moody" gods
 - Unique personality traits for each god
+- Sentiment analysis + dynamic prompt engineering to create "moody" gods
 
 ## Design
 
@@ -26,4 +26,5 @@ with modifications to align the UI/UX with my personal style.
 
 ![system diagram](https://github.com/molarmanful/talking-heads/assets/7122029/53c8ea37-85e8-46d9-a523-ee2078ddf8b8)
 
-WIP
+For this project, I opted to use Go on the backend. Its simplicity, speed, low
+memory footprint, and easy deployment made it a good fit for my needs.
