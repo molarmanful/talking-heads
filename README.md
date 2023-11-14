@@ -1,6 +1,7 @@
 # talking-heads
 
-![chat screenshot](https://github.com/molarmanful/talking-heads/assets/7122029/0091ff0b-8059-43b1-a0ad-07c24b48cf1f)
+![chat screenshot](https://github.com/molarmanful/talking-heads/assets/7122029/057170ee-59a7-4397-b7b1-96d7ee4bdd1d)
+
 
 _Putting a bunch of gods into a room with puny mortals and seeing what happens._
 
