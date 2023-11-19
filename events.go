@@ -208,24 +208,32 @@ func (ST *State) BotLoop() {
 		// check for user mentions
 		// else get last user msg
 		id := npcR.FindString(msg)
+		res := ""
 		if id == "" && strings.Contains(strings.ToLower(msg), "mortal") {
-			id = lU
+			res = lU
 		} else {
-			id = "NPC" + id
+			res = "NPC" + id
 		}
 
 		// update relation based on sentiment
-		if id != "" {
+		if res != "" {
 			if rs, ok := ST.Rels[id]; ok {
-				ps := ST.Sent.PolarityScores(msg)
-				log.Info().Msg(fmt.Sprintf("%f", ps))
-				s := ps.Compound
-				if s <= -0.05 || s >= 0.05 {
+				go func() {
+
+					n, e := ST.ReqResFeels(msg)
+					if e != nil {
+						log.Error().Err(e).Msg("sentiment error")
+						return
+					}
+					if -.05 <= n && n <= .05 {
+						return
+					}
+
 					ST.RelsMu.Lock()
-					rs[bot.USER.ID] = max(-100, min(100, rs[bot.USER.ID]+ST.MaxR*s))
+					rs[bot.USER.ID] = max(-100, min(100, rs[bot.USER.ID]+ST.MaxR*n))
 					ST.RelsMu.Unlock()
-					ST.Users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
-				}
+					ST.Users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(n))))
+				}()
 			}
 		}
 

@@ -3,7 +3,6 @@ module github.com/molarmanful/talking-heads
 go 1.21.3
 
 require (
-	github.com/jonreiter/govader v0.0.0-20230129030235-c72a790a959e
 	github.com/matoous/go-nanoid/v2 v2.0.0
 	github.com/olahol/melody v1.1.4
 	github.com/redis/go-redis/v9 v9.3.0
@@ -21,5 +20,4 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	go.uber.org/ratelimit v0.3.0
 	golang.org/x/sys v0.14.0 // indirect
-	gonum.org/v1/gonum v0.8.2 // indirect
 )

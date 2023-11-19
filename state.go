@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jonreiter/govader"
 	"github.com/olahol/melody"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/schollz/closestmatch"
@@ -25,8 +24,6 @@ type State struct {
 	MsgsMu *sync.Mutex
 	// Fuzzy matcher.
 	CM *closestmatch.ClosestMatch
-	// Sentiment analyzer.
-	Sent *govader.SentimentIntensityAnalyzer
 	// Upper limits of consecutive bot responses to user msg.
 	BotLim   int
 	BotLimMu *sync.Mutex
@@ -71,8 +68,6 @@ func New() *State {
 
 	ST.Msgs = []*Msg{}
 	ST.MsgsMu = &sync.Mutex{}
-
-	ST.Sent = govader.NewSentimentIntensityAnalyzer()
 
 	ST.BotLim = 0
 	ST.BotLimMu = &sync.Mutex{}

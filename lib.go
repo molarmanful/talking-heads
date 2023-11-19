@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 
 	redis "github.com/redis/go-redis/v9"
@@ -138,6 +139,45 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 	log.Info().Msg(O)
 	O = strings.TrimSpace(strings.TrimPrefix(O, "RES:"))
 	return O, nil
+}
+
+// Synchronously requests sentiment analysis response from Replicate API proxy.
+func (ST *State) ReqResFeels(s string) (float64, error) {
+
+	log.Info().Msg("FEEL: " + s)
+
+	j, e := json.Marshal(&ReqR{
+		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 7b
+		Input: &ReqRLLaMa{
+			Prompt: s,
+			SystemPrompt: strings.Join([]string{
+				"You are an accurate sentiment analysis model whose only job is to analyze sentiments as a single decimal number",
+				"(-1 very negative, -0.5 negative, -0.25 neutral-negative, 0 neutral, 0.25 neutral-positive, 0.5 positive, 1 very positive).",
+				"Responses should only be that decimal number.",
+			}, " "),
+			MaxNewTokens:      10,
+			MinNewTokens:      -1,
+			Temperature:       .3,
+			RepetitionPenalty: 1,
+			TopK:              -1,
+			TopP:              .95,
+		},
+	})
+	if e != nil {
+		return 0, e
+	}
+
+	O, e := ST.ReqRes(j, func(req *http.Request) {})
+	if e != nil {
+		return 0, e
+	}
+
+	log.Info().Msg(O)
+	n, e := strconv.ParseFloat(O, 64)
+	if e != nil {
+		return 0, e
+	}
+	return n, nil
 }
 
 // Converts last n messages to tagged prompt.
