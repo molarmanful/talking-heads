@@ -190,7 +190,7 @@ func (ST *State) BotLoop() {
 		time.Sleep(time.Duration(float32(rand.Intn(11))/10+.5) * time.Second)
 
 		// API req/res
-		msg, e := ST.ReqRes(bot, ST.RelStr(lms, bot.USER.ID))
+		msg, e := ST.ReqResGod(bot, ST.RelStr(lms, bot.USER.ID))
 		ST.M.Broadcast([]byte(bot.USER.MkMsg("-t", "")))
 		if e != nil {
 			log.Error().Err(e).Msg("post error")
@@ -221,7 +221,9 @@ func (ST *State) BotLoop() {
 				log.Info().Msg(fmt.Sprintf("%f", ps))
 				s := ps.Compound
 				if s <= -0.05 || s >= 0.05 {
+					ST.RelsMu.Lock()
 					rs[bot.USER.ID] = max(-100, min(100, rs[bot.USER.ID]+ST.MaxR*s))
+					ST.RelsMu.Unlock()
 					ST.Users[id].Write([]byte(bot.USER.MkMsg("r", fmt.Sprint(s))))
 				}
 			}

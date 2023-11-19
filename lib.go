@@ -65,12 +65,45 @@ func (ST *State) CalcWs(lms []*Msg) ([]*Bot, string) {
 	return bs, lU
 }
 
+// Synchronously requests response from Replicate API proxy.
+func (ST *State) ReqRes(j []byte, during func(*http.Request)) (string, error) {
+
+	// req
+	req, e := http.NewRequest("POST", "https://replicate-api-proxy.glitch.me/create_n_get", bytes.NewBuffer(j))
+	if e != nil {
+		return "", e
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	// res
+	during(req)
+	client := &http.Client{}
+	res, e := client.Do(req)
+	if e != nil {
+		return "", e
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return "", errors.New(res.Status)
+	}
+
+	post := &ResR{}
+	if e = json.NewDecoder(res.Body).Decode(post); e != nil {
+		return "", e
+	}
+
+	O := strings.TrimSpace(strings.Join(post.Output, ""))
+	return O, nil
+}
+
 // Synchronously requests god response from Replicate API proxy.
-func (ST *State) ReqRes(bot *Bot, relstr string) (string, error) {
+func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 
 	id := bot.USER.ID
 	log.Info().Msg("Q: " + id)
 	r := ST.TagMsgs(id, rand.Intn(ST.PLastN)+1)
+
 	j, e := json.Marshal(&ReqR{
 		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
 		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
@@ -95,34 +128,16 @@ func (ST *State) ReqRes(bot *Bot, relstr string) (string, error) {
 		return "", e
 	}
 
-	// req
-	req, e := http.NewRequest("POST", "https://replicate-api-proxy.glitch.me/create_n_get", bytes.NewBuffer(j))
+	O, e := ST.ReqRes(j, func(req *http.Request) {
+		ST.M.Broadcast([]byte(bot.USER.MkMsg("+t", "")))
+	})
 	if e != nil {
 		return "", e
 	}
-	req.Header.Add("Content-Type", "application/json")
 
-	// res
-	ST.M.Broadcast([]byte(bot.USER.MkMsg("+t", "")))
-	client := &http.Client{}
-	res, e := client.Do(req)
-	if e != nil {
-		return "", e
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != http.StatusOK {
-		return "", errors.New(res.Status)
-	}
-
-	post := &ResR{}
-	if e = json.NewDecoder(res.Body).Decode(post); e != nil {
-		return "", e
-	}
-
-	O := strings.TrimSpace(strings.Join(post.Output, ""))
 	log.Info().Msg(O)
-	return strings.TrimSpace(strings.TrimPrefix(O, "RES:")), nil
+	O = strings.TrimSpace(strings.TrimPrefix(O, "RES:"))
+	return O, nil
 }
 
 // Converts last n messages to tagged prompt.
