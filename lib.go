@@ -74,7 +74,7 @@ func (ST *State) ReqRes(M *melody.Melody, bot *Bot, relstr string) (string, erro
 	j, e := json.Marshal(&ReqR{
 		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
 		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
-		Input: &ReqRInput{
+		Input: &ReqRLLaMa{
 			Prompt: r,
 			SystemPrompt: strings.Join([]string{
 				bot.PROMPT,

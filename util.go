@@ -23,11 +23,11 @@ func removeAccents(s string) string {
 
 // Replicate API POST request.
 type ReqR struct {
-	Version string     `json:"version"`
-	Input   *ReqRInput `json:"input"`
+	Version string      `json:"version"`
+	Input   interface{} `json:"input"`
 }
 
-type ReqRInput struct {
+type ReqRLLaMa struct {
 	Prompt            string  `json:"prompt"`
 	SystemPrompt      string  `json:"system_prompt"`
 	MaxNewTokens      int     `json:"max_new_tokens"`
