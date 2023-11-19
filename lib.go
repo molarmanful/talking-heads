@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/olahol/melody"
 	redis "github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
+// Connects to Redis
 func (ST *State) InitR(url string) *State {
 
 	opt, e := redis.ParseURL(url)
@@ -65,8 +65,8 @@ func (ST *State) CalcWs(lms []*Msg) ([]*Bot, string) {
 	return bs, lU
 }
 
-// Synchronously requests response from Replicate API proxy.
-func (ST *State) ReqRes(M *melody.Melody, bot *Bot, relstr string) (string, error) {
+// Synchronously requests god response from Replicate API proxy.
+func (ST *State) ReqRes(bot *Bot, relstr string) (string, error) {
 
 	id := bot.USER.ID
 	log.Info().Msg("Q: " + id)
@@ -103,7 +103,7 @@ func (ST *State) ReqRes(M *melody.Melody, bot *Bot, relstr string) (string, erro
 	req.Header.Add("Content-Type", "application/json")
 
 	// res
-	M.Broadcast([]byte(bot.USER.MkMsg("+t", "")))
+	ST.M.Broadcast([]byte(bot.USER.MkMsg("+t", "")))
 	client := &http.Client{}
 	res, e := client.Do(req)
 	if e != nil {

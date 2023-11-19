@@ -190,7 +190,7 @@ func (ST *State) BotLoop() {
 		time.Sleep(time.Duration(float32(rand.Intn(11))/10+.5) * time.Second)
 
 		// API req/res
-		msg, e := ST.ReqRes(ST.M, bot, ST.RelStr(lms, bot.USER.ID))
+		msg, e := ST.ReqRes(bot, ST.RelStr(lms, bot.USER.ID))
 		ST.M.Broadcast([]byte(bot.USER.MkMsg("-t", "")))
 		if e != nil {
 			log.Error().Err(e).Msg("post error")
