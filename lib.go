@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -106,14 +107,15 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 	r := ST.TagMsgs(id, rand.Intn(ST.PLastN)+1)
 
 	j, e := json.Marshal(&ReqR{
-		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b
-		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b
+		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b chat
+		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
 		Input: &ReqRLLaMa{
 			Prompt: r,
 			SystemPrompt: strings.Join([]string{
 				bot.PROMPT,
 				relstr, "\n",
-				`Generate a concise one-sentence response as ` + id + ` to any message in the conversation, without using speaker labels and ensuring relevance to the context provided.`,
+				`Generate a concise one-sentence response as ` + id + ` to any message in the conversation,`,
+				`without using speaker labels and ensuring relevance to the context provided.`,
 				`If you understand this prompt, start your response with "RES:".`,
 				`Example responses:\nRES: Witness my power, mere mortal!\nRES: You will suffer for your transgressions, NPC#F69420.\nRES: ZEUS, I find you tolerable.`,
 			}, " "),
@@ -147,15 +149,17 @@ func (ST *State) ReqResFeels(s string) (float64, error) {
 	log.Info().Msg("FEEL: " + s)
 
 	j, e := json.Marshal(&ReqR{
-		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 7b
+		Version: "13c3cdee13ee059ab779f0291d29054dab00a47dad8261375654de5540165fb0", // llama 2 7b chat
 		Input: &ReqRLLaMa{
 			Prompt: s,
 			SystemPrompt: strings.Join([]string{
-				"You are an accurate sentiment analysis model whose only job is to analyze sentiments as a single decimal number",
-				"(-1 very negative, -0.5 negative, -0.25 neutral-negative, 0 neutral, 0.25 neutral-positive, 0.5 positive, 1 very positive).",
-				"Responses should only be that decimal number.",
+				"You are an accurate sentiment analyzer.",
+				"Given a message sent from a god to a mortal, your job is to analyze how the god feels about the mortal with:",
+				"-3 for hate, -2 for dislike, -1 for mild dislike, 0 for neutral, 1 for mild like, 2 for like, 3 for love.",
+				"The first line of your response is the number alone.",
+				"The second line of your response is a concise reason for your analysis.",
 			}, " "),
-			MaxNewTokens:      10,
+			MaxNewTokens:      128,
 			MinNewTokens:      -1,
 			Temperature:       .3,
 			RepetitionPenalty: 1,
@@ -171,13 +175,16 @@ func (ST *State) ReqResFeels(s string) (float64, error) {
 	if e != nil {
 		return 0, e
 	}
-
 	log.Info().Msg(O)
-	n, e := strconv.ParseFloat(O, 64)
+
+	numR := regexp.MustCompile(`[\d.-]+`)
+
+	n, e := strconv.ParseFloat(numR.FindString(O), 64)
 	if e != nil {
 		return 0, e
 	}
-	return n, nil
+
+	return max(-1, min(1, n/3)), nil
 }
 
 // Converts last n messages to tagged prompt.

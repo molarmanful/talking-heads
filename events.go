@@ -208,15 +208,14 @@ func (ST *State) BotLoop() {
 		// check for user mentions
 		// else get last user msg
 		id := npcR.FindString(msg)
-		res := ""
-		if id == "" && strings.Contains(strings.ToLower(msg), "mortal") {
-			res = lU
+		if id != "" {
+			id = "NPC" + id
 		} else {
-			res = "NPC" + id
+			id = lU
 		}
 
 		// update relation based on sentiment
-		if res != "" {
+		if id != "" {
 			if rs, ok := ST.Rels[id]; ok {
 				go func() {
 
