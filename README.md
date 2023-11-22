@@ -56,7 +56,7 @@ RES: You will suffer for your transgressions, NPC#F69420.
 RES: ZEUS, I find you tolerable.
 ```
 
-This prompt attempts to ensure that responses are in-character and "clean."
+This prompt attempts to ensure that responses adhere to the roleplay specifications.
 
 The way the backend determines which god should respond is contingent on:
 
@@ -64,9 +64,22 @@ The way the backend determines which god should respond is contingent on:
   certain god will respond to a certain user.
 - Direct mentions of the god.
 
-VADER sentiment analysis of the god's response determines its friendliness
-towards a user. Ideally, this means that a mean user message would cause a
-decrease in friendliness towards that user.
+God responses pass to another LLaMa-2 7B model for sentiment analysis with
+the following prompt:
+
+```plain
+You are an accurate sentiment analyzer. Given a message sent from a god to a
+mortal, your job is to analyze how the god feels about the mortal with:
+
+-3 for hate, -2 for dislike, -1 for mild dislike, 0 for neutral, 1 for mild like,
+2 for like, 3 for love.
+
+The first line of your response is the number alone. The second line of your
+response is a concise reason for your analysis.
+```
+
+Ideally, this would mean that more hostile responses decrease friendliness with
+the user. In practice, these sentiment analyses are somewhat prone to error.
 
 ### Frontend
 
@@ -83,7 +96,7 @@ with modifications to align the UI/UX with my personal style.
 
 ## The Future
 
-- Censoring of offensive user input
+- ~Censoring of offensive user input~ done
 - Dynamically generated gods
 - Ability for users to create gods (e.g. from custom prompt)
 - Avatars for gods
