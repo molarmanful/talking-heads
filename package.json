@@ -10,6 +10,7 @@
     "format": "prettier --plugin-search-dir . --write ."
   },
   "dependencies": {
+    "@2toad/profanity": "^2.2.0",
     "@ctrl/tinycolor": "^4.0.2",
     "@grail-ui/svelte": "^0.11.0",
     "@sveltejs/adapter-static": "^2.0.3",

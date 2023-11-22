@@ -4,6 +4,7 @@
   let el
   export let D, ws, value, idc, fav, scrollB
   export let splash = true
+  export let censor = true
 
   $: if (!splash && el)
     requestAnimationFrame(() => {
@@ -50,6 +51,16 @@
   }}
 >
   {#if !splash}
+    <button
+      class="bord"
+      type="button"
+      on:click={() => {
+        censor = !censor
+      }}
+      transition:fly={{ duration: 300, x: -40 }}
+      >{censor ? '$%!@' : 'SHIT'}</button
+    >
+
     <div class="relative flex-1" transition:fly={{ duration: 300, y: 40 }}>
       <input
         bind:this={el}
@@ -72,7 +83,7 @@
     </div>
 
     <button
-      class="p-2 bg-transparent bord"
+      class="bord"
       disabled={splash || !value.length}
       transition:fly={{ duration: 300, x: 40 }}
     >

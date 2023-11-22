@@ -1,4 +1,5 @@
 <script>
+  import { profanity } from '@2toad/profanity'
   import { createResizeObserver } from '@grail-ui/svelte'
   import { fly } from 'svelte/transition'
 
@@ -6,6 +7,7 @@
 
   let el
   export let out, typ, ws, wslock
+  export let censor = true
   let scrh = 0
 
   const { useResizeObserver, entries } = createResizeObserver()
@@ -47,7 +49,9 @@
             style:color={idc.c}
             style:background-color={goodBG(idc.c)}>{idc.id}</strong
           >
-          <svelte:fragment slot="b">{m}</svelte:fragment>
+          <svelte:fragment slot="b"
+            >{censor ? profanity.censor(m) : m}</svelte:fragment
+          >
         </Msg>
       {:else}
         <Msg

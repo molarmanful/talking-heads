@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { writable } from 'svelte/store'
 
+  import { browser } from '$app/environment'
   import { Header, In, Out, Splash, Users } from '$lib'
 
   let out = writable([])
@@ -13,6 +14,8 @@
   let ws
   let fav = '[REDACTED]'
   let wslock = false
+  let censor = (browser && localStorage.getItem('censor')) || true
+  $: browser && localStorage.setItem('censor', censor ? '1' : '')
   let scrollB
   let keepScroll
 
@@ -118,8 +121,8 @@
   <Splash bind:splash />
   <Header {splash} />
   <div class="flex-(~ 1) py-3 lg:pb-5 overflow-hidden">
-    <Out {out} {typ} {ws} bind:wslock bind:scrollB bind:keepScroll />
+    <Out {censor} {out} {typ} {ws} bind:wslock bind:scrollB bind:keepScroll />
     <Users {splash} {users} />
   </div>
-  <In {D} {fav} {idc} {scrollB} {splash} {value} {ws} />
+  <In {D} {fav} {idc} {scrollB} {splash} {value} {ws} bind:censor />
 </main>
