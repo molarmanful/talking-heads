@@ -80,7 +80,7 @@
       <Msg class="text-sm">
         <svelte:fragment slot="h">{'>'}</svelte:fragment>
         <svelte:fragment slot="b"
-          ><span style:color={c} style:background-color={goodBG(c)}>{id}</span
+          ><span style:background-color={c} style:color={goodBG(c)}>{id}</span
           >...</svelte:fragment
         >
       </Msg>

@@ -18,7 +18,7 @@
         transition:fly={{ duration: 300, x: 40 }}
       >
         <div>
-          <span style:color={c} style:background-color={goodBG(c)}>{id}</span>
+          <span style:background-color={c} style:color={goodBG(c)}>{id}</span>
         </div>
       </div>
     {/each}
