@@ -46,8 +46,8 @@
         <Msg class="text-gray-300" col>
           <strong
             slot="h"
-            style:color={idc.c}
-            style:background-color={goodBG(idc.c)}>{idc.id}</strong
+            style:background-color={idc.c}
+            style:color={goodBG(idc.c)}>{idc.id}</strong
           >
           <svelte:fragment slot="b"
             >{censor ? profanity.censor(m) : m}</svelte:fragment
