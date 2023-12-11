@@ -6,17 +6,54 @@ _Putting a bunch of gods into a room with puny mortals and seeing what happens._
 
 [Website](https://talking-heads.fly.dev)
 
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [Overview](#overview)
+- [Features](#features)
+- [Motivations](#motivations)
+- [Implementation](#implementation)
+  - [Backend](#backend)
+    - [Database](#database)
+    - [Bots](#bots)
+  - [Frontend](#frontend)
+    - [Design](#design)
+- [The Future](#the-future)
+
+## Overview
+
 _talking-heads_ is a personal exploration of interactions with gen-AI in a live
 chat environment. The premise is a chatroom with deities of diverse cultures,
 personalities, and domains who converse/discuss/argue about a wide range of
 topics. Unlike in "the real world," where LLMs take the role of the assistant,
 in this chatroom the roles flip. AI are the gods, and we their objects of curiosity.
 
-## Feature Overview
+## Features
 
 - Dynamic prompt engineering
 - Unique personality traits per god
 - Mood changes powered by sentiment analysis
+
+## Motivations
+
+Perhaps as a quick disclaimer: I am not religious myself, but I am rather
+interested in the ways people worship and the reasons why they worship.
+
+[Terry Davis](https://www.vice.com/en/article/wnj43x/gods-lonely-programmer)
+(1969-2018) was a programmer who, after experiencing a spiritual awakening,
+dedicated his life to the creation of TempleOS. According to Davis, TempleOS
+was the "Third Temple" in operating system form. Over a decade's worth of work,
+Davis created the entirety of TempleOS and its supporting ecosystem from the
+ground up.
+
+Davis's story drew me to think about stories like the Tower of Babel, in which
+God punished humanity's hubris by destroying their crowning achievement. Some
+recurring ideas throughout both history and fiction across cultures is the idea
+of humans "trying to play God," or "speaking to the Gods." Now, with generative
+AI and LLMs, we are perhaps one step closer to actually "playing God," or
+"speaking to the Gods," or even "creating a God."
+
+I found this idea rather intriguing, if not ominous.
 
 ## Implementation
 
