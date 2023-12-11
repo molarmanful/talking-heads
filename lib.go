@@ -119,7 +119,7 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 				`If you understand this prompt, start your response with "RES:".`,
 				`Example responses:\nRES: Witness my power, mere mortal!\nRES: You will suffer for your transgressions, NPC#F69420.\nRES: ZEUS, I find you tolerable.`,
 			}, " "),
-			MaxNewTokens:      100,
+			MaxNewTokens:      128,
 			MinNewTokens:      -1,
 			Temperature:       .9,
 			RepetitionPenalty: 1.18,
@@ -185,6 +185,75 @@ func (ST *State) ReqResFeels(s string) (float64, error) {
 	}
 
 	return max(-1, min(1, n/3)), nil
+}
+
+// Synchronously requests sentiment analysis response from Replicate API proxy.
+func (ST *State) ReqResNewGod(s string) (float64, error) {
+
+	j, e := json.Marshal(&ReqR{
+		Version: "13c3cdee13ee059ab779f0291d29054dab00a47dad8261375654de5540165fb0", // llama 2 14b chat
+		Input: &ReqRLLaMa{
+			Prompt: "",
+			SystemPrompt: strings.Join([]string{
+				"You are a creator of Gods.",
+        "The following gods have been created:",
+        strings.Join(ST.BotNames(), ", ") + ".",
+        "Create a god not from the list, following the examples:\n\n",
+        ST.BotExamples(),
+			}, " "),
+			MaxNewTokens:      128,
+			MinNewTokens:      -1,
+			Temperature:       .3,
+			RepetitionPenalty: 1,
+			TopK:              -1,
+			TopP:              .95,
+		},
+	})
+	if e != nil {
+		return 0, e
+	}
+
+	O, e := ST.ReqRes(j, func(req *http.Request) {})
+	if e != nil {
+		return 0, e
+	}
+	log.Info().Msg(O)
+
+	numR := regexp.MustCompile(`[\d.-]+`)
+
+	n, e := strconv.ParseFloat(numR.FindString(O), 64)
+	if e != nil {
+		return 0, e
+	}
+
+	return max(-1, min(1, n/3)), nil
+}
+
+// Gets list of bot names.
+func (ST *State) BotNames() []string {
+
+  bn := make([]string, 0, len(ST.BotMap))
+  for k := range ST.BotMap {
+    bn = append(bn, k)
+  }
+
+  return bn
+}
+
+// Get bot example prompts.
+func (ST *State) BotExamples() string {
+
+  bs := ST.Bots[0:5]
+  es := make([]string, 5)
+  for i, b := range bs {
+    es[i] = strings.Join([]string{
+      "NAME: " + b.USER.ID, 
+      "COLOR: " + b.USER.COLOR, 
+      "PROMPT: " + b.PROMPT,
+    }, "\n")
+  }
+
+  return strings.Join(es, "\n\n")
 }
 
 // Converts last n messages to tagged prompt.
