@@ -187,73 +187,113 @@ func (ST *State) ReqResFeels(s string) (float64, error) {
 	return max(-1, min(1, n/3)), nil
 }
 
-// Synchronously requests sentiment analysis response from Replicate API proxy.
-func (ST *State) ReqResNewGod(s string) (float64, error) {
+// Synchronously requests new god profile from Replicate API proxy.
+func (ST *State) ReqResNewGod() (*Bot, error) {
 
 	j, e := json.Marshal(&ReqR{
-		Version: "13c3cdee13ee059ab779f0291d29054dab00a47dad8261375654de5540165fb0", // llama 2 14b chat
+		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
 		Input: &ReqRLLaMa{
 			Prompt: "",
 			SystemPrompt: strings.Join([]string{
-				"You are a creator of Gods.",
-        "The following gods have been created:",
-        strings.Join(ST.BotNames(), ", ") + ".",
-        "Create a god not from the list, following the examples:\n\n",
-        ST.BotExamples(),
+				"You are a god creation machine.",
+				"The following gods have been created:",
+				strings.Join(ST.BotNames(), ", ") + ".",
+				"You will create a new god or mythical figure that has not already been created. Examples:\n---\n\n",
+				ST.BotExamples() + "\n\n---\n",
+				"You are obedient; you will strictly follow the above example structures and say nothing else.",
+				"Say DONE when you are done and have complied with the specifications.",
 			}, " "),
-			MaxNewTokens:      128,
+			MaxNewTokens:      256,
 			MinNewTokens:      -1,
-			Temperature:       .3,
-			RepetitionPenalty: 1,
-			TopK:              -1,
-			TopP:              .95,
+			Temperature:       .9,
+			RepetitionPenalty: 1.18,
+			TopK:              30,
+			TopP:              .73,
 		},
 	})
 	if e != nil {
-		return 0, e
+		return nil, e
 	}
 
 	O, e := ST.ReqRes(j, func(req *http.Request) {})
 	if e != nil {
-		return 0, e
+		return nil, e
 	}
 	log.Info().Msg(O)
 
-	numR := regexp.MustCompile(`[\d.-]+`)
-
-	n, e := strconv.ParseFloat(numR.FindString(O), 64)
+	b, e := ST.AddBot(O)
 	if e != nil {
-		return 0, e
+		return nil, e
 	}
 
-	return max(-1, min(1, n/3)), nil
+	return b, nil
 }
 
 // Gets list of bot names.
 func (ST *State) BotNames() []string {
 
-  bn := make([]string, 0, len(ST.BotMap))
-  for k := range ST.BotMap {
-    bn = append(bn, k)
-  }
+	bn := make([]string, 0, len(ST.BotMap))
+	for k := range ST.BotMap {
+		bn = append(bn, k)
+	}
 
-  return bn
+	return bn
 }
 
-// Get bot example prompts.
+// Gets bot example prompts.
 func (ST *State) BotExamples() string {
 
-  bs := ST.Bots[0:5]
-  es := make([]string, 5)
-  for i, b := range bs {
-    es[i] = strings.Join([]string{
-      "NAME: " + b.USER.ID, 
-      "COLOR: " + b.USER.COLOR, 
-      "PROMPT: " + b.PROMPT,
-    }, "\n")
-  }
+	bs := ST.Bots[0:5]
+	es := make([]string, 5)
+	for i, b := range bs {
+		es[i] = b.String()
+	}
 
-  return strings.Join(es, "\n\n")
+	return strings.Join(es, "\n\n")
+}
+
+// Parses prompt and adds bot.
+func (ST *State) AddBot(s string) (*Bot, error) {
+
+	linesR := regexp.MustCompile("\r?\n+")
+	bot := &Bot{&User{"", ""}, ""}
+	for _, l := range linesR.Split(s, -1) {
+		if strings.HasPrefix(l, "ID: ") {
+			bot.USER.ID = strings.TrimPrefix(l, "ID: ")
+		} else if strings.HasPrefix(l, "COLOR: ") {
+			bot.USER.COLOR = strings.TrimPrefix(l, "COLOR: ")
+		} else if strings.HasPrefix(l, "PROMPT: ") {
+			bot.PROMPT = strings.TrimPrefix(l, "PROMPT: ")
+		}
+	}
+	if bot.USER.ID == "" || bot.USER.COLOR == "" || bot.PROMPT == "" {
+		return nil, errors.New("bad bot profile")
+	}
+	if _, ok := ST.BotMap[bot.USER.ID]; ok {
+		return nil, errors.New("bot already exists")
+	}
+
+	ST.BotsMu.Lock()
+	ST.BotMapMu.Lock()
+	ST.WbotsMu.Lock()
+	ST.RelsMu.Lock()
+
+	ST.Bots = append(ST.Bots, bot)
+	ST.BotsMu.Unlock()
+
+	ST.BotMap[bot.USER.ID] = bot
+	ST.BotMapMu.Unlock()
+
+	for u := range ST.Wbots {
+		ST.Wbots[u][bot.USER.ID] = 1
+		ST.Rels[u][bot.USER.ID] = float64(rand.Intn(100) - 50)
+	}
+	ST.WbotsMu.Unlock()
+	ST.RelsMu.Unlock()
+
+	go ST.StoreGod(bot)
+
+	return bot, nil
 }
 
 // Converts last n messages to tagged prompt.
@@ -337,9 +377,31 @@ func (ST *State) GetMsgs() ([]*Msg, error) {
 	return ms, nil
 }
 
+// Gets gods from Redis.
+func (ST *State) GetGods() error {
+
+	res, e := ST.R.LRange(ST.Ctx, "th:gods", 0, -1).Result()
+	if e != nil {
+		return e
+	}
+
+	for _, v := range res {
+		ST.AddBot(v)
+	}
+
+	return nil
+}
+
 // Store msgs in Redis.
 func (ST *State) StoreMsg(m *Msg) {
 	if e := ST.R.RPush(ST.Ctx, "th:chat", m.String()).Err(); e != nil {
 		log.Error().Err(e).Msg("redis write th:chat error")
+	}
+}
+
+// Store gods in Redis.
+func (ST *State) StoreGod(b *Bot) {
+	if e := ST.R.RPush(ST.Ctx, "th:gods", b.String()).Err(); e != nil {
+		log.Error().Err(e).Msg("redis write th:gods error")
 	}
 }

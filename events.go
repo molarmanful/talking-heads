@@ -242,6 +242,34 @@ func (ST *State) BotLoop() {
 	}
 }
 
+func (ST *State) NewBotLoop() {
+
+	for {
+		time.Sleep(time.Second)
+
+		if rand.Float64() > ST.NewBotP {
+			ST.NewBotPMu.Lock()
+			ST.NewBotP += .01
+			ST.NewBotPMu.Unlock()
+			continue
+		}
+
+		log.Info().Msg("birthing god...")
+
+		b, e := ST.ReqResNewGod()
+		ST.NewBotPMu.Lock()
+		ST.NewBotP = .01
+		ST.NewBotPMu.Unlock()
+		if e != nil {
+			log.Error().Err(e).Msg("god birthing failed")
+			continue
+		}
+
+		ST.M.Broadcast([]byte(b.USER.MkMsg("+", "")))
+		time.Sleep(10 * time.Second)
+	}
+}
+
 func (ST *State) WSDisconn(s *melody.Session) {
 
 	v, x := s.Get("user")

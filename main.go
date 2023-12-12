@@ -20,25 +20,26 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
-	c := New()
-	c.InitR(*rurl)
+	st := New()
+	st.InitR(*rurl)
 
-	v, e := c.GetMsgs()
+	v, e := st.GetMsgs()
 	if e != nil {
 		log.Fatal().Err(e).Msg("redis read th:chat error")
 	}
-	c.Msgs = v
+	st.Msgs = v
 
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		c.M.HandleRequest(w, r)
+		st.M.HandleRequest(w, r)
 	})
 
-	c.M.HandleConnect(c.WSConn)
-	c.M.HandleMessage(c.WSMsg)
-	c.M.HandleDisconnect(c.WSDisconn)
-	go c.BotLoop()
+	st.M.HandleConnect(st.WSConn)
+	st.M.HandleMessage(st.WSMsg)
+	st.M.HandleDisconnect(st.WSDisconn)
+	go st.BotLoop()
+	go st.NewBotLoop()
 
 	log.Info().Msgf("Listening on port %d", *port)
 	log.Fatal().Err(http.ListenAndServe(fmt.Sprint(":", *port), nil)).Msg("server error")

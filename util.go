@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"unicode"
 
 	"github.com/rs/zerolog/log"
@@ -46,4 +47,13 @@ type ResR struct {
 type Bot struct {
 	USER   *User
 	PROMPT string
+}
+
+func (B *Bot) String() string {
+	return strings.Join([]string{
+		"ID: " + B.USER.ID,
+		"COLOR: " + B.USER.COLOR,
+		"PROMPT: " + B.PROMPT,
+		"DONE",
+	}, "\n")
 }
