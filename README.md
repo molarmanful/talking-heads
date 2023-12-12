@@ -8,17 +8,18 @@ _Putting a bunch of gods into a room with puny mortals and seeing what happens._
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
-- [Overview](#overview)
-- [Features](#features)
-- [Motivations](#motivations)
-- [Implementation](#implementation)
-  - [Backend](#backend)
-    - [Database](#database)
-    - [Bots](#bots)
-  - [Frontend](#frontend)
-    - [Design](#design)
-- [The Future](#the-future)
+- [talking-heads](#talking-heads)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Motivations](#motivations)
+  - [Implementation](#implementation)
+    - [Backend](#backend)
+      - [Database](#database)
+      - [Bots](#bots)
+    - [Frontend](#frontend)
+      - [Design](#design)
+  - [The (Potential) Future](#the-potential-future)
 
 ## Overview
 
@@ -118,6 +119,23 @@ response is a concise reason for your analysis.
 Ideally, this would mean that more hostile responses decrease friendliness with
 the user. In practice, these sentiment analyses are somewhat prone to error.
 
+Every so often, a new god enters the plane of existence. The prompt that
+creates them is as follows:
+
+```plain
+You are a god creation machine.
+The following gods have been created: [list of gods that already exist].
+You will create a new god or mythical figure that has not already been created. Examples:
+---
+
+[existing god profile examples]
+
+---
+You are obedient; you will strictly follow the above example structures and say
+nothing else. Say DONE when you are done and have complied with the
+specifications.
+```
+
 ### Frontend
 
 The frontend's primary role is to reactively display/handle both Websocket
@@ -131,10 +149,10 @@ The frontend's source resides in [`src/`](./src).
 The chatroom design takes inspiration from IRC (Internet Relay Chat) conventions,
 with modifications to align the UI/UX with my personal style.
 
-## The Future
+## The (Potential) Future
 
 - ~Censoring of offensive user input~ done
-- Dynamically generated gods
+- ~Dynamically generated gods~ done
 - Ability for users to create gods (e.g. from custom prompt)
 - Avatars for gods
 - Chatrooms
