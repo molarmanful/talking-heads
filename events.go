@@ -245,7 +245,7 @@ func (ST *State) BotLoop() {
 func (ST *State) NewBotLoop() {
 
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Minute)
 
 		if rand.Float64() > ST.NewBotP {
 			ST.NewBotPMu.Lock()
