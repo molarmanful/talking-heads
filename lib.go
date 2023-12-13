@@ -197,7 +197,7 @@ func (ST *State) ReqResNewGod() (*Bot, error) {
 			Prompt: strings.Join(ST.BotNames(), ", "),
 			SystemPrompt: strings.Join([]string{
 				"You are a god creation machine. You are given a list of gods have been created.",
-				"You will create a new god or mythical figure that has not already been created (i.e. is not on the list of gods).",
+				"You will create a roleplay prompt for a god or mythical figure that has not already been created (i.e. is not on the list of gods).",
         "Draw from a wide variety of cultures, domains, and personalities.",
         "Examples:\n---\n\n",
 				ST.BotExamples() + "\n\n---\n",
