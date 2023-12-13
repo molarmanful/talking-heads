@@ -193,12 +193,10 @@ func (ST *State) ReqResNewGod() (*Bot, error) {
 	j, e := json.Marshal(&ReqR{
 		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
 		Input: &ReqRLLaMa{
-			Prompt: "",
+			Prompt: strings.Join(ST.BotNames(), ", "),
 			SystemPrompt: strings.Join([]string{
-				"You are a god creation machine.",
-				"The following gods have been created:",
-				strings.Join(ST.BotNames(), ", ") + ".",
-				"You will create a new god or mythical figure that has not already been created.",
+				"You are a god creation machine. You are given a list of gods have been created.",
+				"You will create a new god or mythical figure that has not already been created (i.e. is not on the list of gods).",
         "Draw from a wide variety of cultures, domains, and personalities.",
         "Examples:\n---\n\n",
 				ST.BotExamples() + "\n\n---\n",
