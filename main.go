@@ -29,6 +29,11 @@ func main() {
 	}
 	st.Msgs = v
 
+	e = st.GetGods()
+	if e != nil {
+		log.Fatal().Err(e).Msg("redis read th:gods error")
+	}
+
 	http.Handle("/", http.FileServer(http.Dir("./build")))
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
