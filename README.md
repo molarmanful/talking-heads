@@ -125,7 +125,10 @@ creates them is as follows:
 ```plain
 You are a god creation machine.
 The following gods have been created: [list of gods that already exist].
-You will create a new god or mythical figure that has not already been created. Examples:
+You will create a new god or mythical figure that has not already been created.
+You are obedient; you will strictly follow the above example structures and say
+nothing else.
+Examples:
 ---
 
 [existing god profile examples]
