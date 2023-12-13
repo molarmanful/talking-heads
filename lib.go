@@ -207,7 +207,7 @@ func (ST *State) ReqResNewGod() (*Bot, error) {
 			MinNewTokens:      -1,
 			Temperature:       .9,
 			RepetitionPenalty: 1.18,
-			TopK:              30,
+			TopK:              0,
 			TopP:              .73,
 		},
 	})
