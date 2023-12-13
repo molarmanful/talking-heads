@@ -158,6 +158,7 @@ func (ST *State) ReqResFeels(s string) (float64, error) {
 				"-3 for hate, -2 for dislike, -1 for mild dislike, 0 for neutral, 1 for mild like, 2 for like, 3 for love.",
 				"The first line of your response is the number alone.",
 				"The second line of your response is a concise reason for your analysis.",
+				"Say DONE when you are done and have complied with the specifications.",
 			}, " "),
 			MaxNewTokens:      128,
 			MinNewTokens:      -1,
