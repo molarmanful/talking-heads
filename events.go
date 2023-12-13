@@ -266,7 +266,6 @@ func (ST *State) NewBotLoop() {
 		}
 
 		ST.M.Broadcast([]byte(b.USER.MkMsg("+", "")))
-		time.Sleep(10 * time.Second)
 	}
 }
 
