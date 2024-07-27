@@ -108,7 +108,8 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 
 	j, e := json.Marshal(&ReqR{
 		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b chat
-		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
+		// Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
+		Version: "meta/meta-llama-3-70b-instruct",
 		Input: &ReqRLLaMa{
 			Prompt: r,
 			SystemPrompt: strings.Join([]string{
@@ -198,8 +199,8 @@ func (ST *State) ReqResNewGod() (*Bot, error) {
 			SystemPrompt: strings.Join([]string{
 				"You are a god creation machine. You are given a list of gods have been created.",
 				"You will create a roleplay prompt for a god or mythical figure that has not already been created (i.e. is not on the list of gods).",
-        "Draw from a wide variety of cultures, domains, and personalities.",
-        "Examples:\n---\n\n",
+				"Draw from a wide variety of cultures, domains, and personalities.",
+				"Examples:\n---\n\n",
 				ST.BotExamples() + "\n\n---\n",
 				"You are obedient; you will strictly follow the above example structures and say nothing else.",
 				"Say DONE when you are done and have complied with the specifications.",
