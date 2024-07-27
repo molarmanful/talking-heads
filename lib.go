@@ -107,8 +107,8 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 	r := ST.TagMsgs(id, rand.Intn(ST.PLastN)+1)
 
 	j, e := json.Marshal(&ReqR{
-		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b chat
-		Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
+		Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b chat
+		// Version: "f4e2de7od66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
 		Input: &ReqRLLaMa{
 			Prompt: r,
 			SystemPrompt: strings.Join([]string{
