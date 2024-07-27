@@ -109,7 +109,7 @@ func (ST *State) ReqResGod(bot *Bot, relstr string) (string, error) {
 	j, e := json.Marshal(&ReqR{
 		// Version: "02e509c789964a7ea8736978a43525956ef40397be9033abf9fd2badfe68c9e3", // llama 2 70b chat
 		// Version: "f4e2de70d66816a838a89eeeb621910adffb0dd0baba3976c96980970978018d", // llama 2 13b chat
-		Version: "meta/meta-llama-3-70b-instruct",
+		Version: "aa825bb175b682c7e92c7299ec319f6cdae0cbd7803dd74a6e4f31d71512ab54", // llama 3 70b instruct
 		Input: &ReqRLLaMa{
 			Prompt: r,
 			SystemPrompt: strings.Join([]string{
