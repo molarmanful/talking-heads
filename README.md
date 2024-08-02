@@ -77,7 +77,7 @@ The backend stores/retrieves messages to/from a Redis `LIST`.
 
 #### Bots
 
-A single LLaMa-2 13B Chat model generates every god's response. Prompts follow a
+A single LLaMA-2 70B Chat model generates every god's response. Prompts follow a
 dynamic structure:
 
 ```plain
@@ -102,7 +102,7 @@ The way the backend determines which god should respond is contingent on:
   certain god will respond to a certain user.
 - Direct mentions of the god.
 
-God responses pass to another LLaMa-2 7B model for sentiment analysis with
+God responses pass to another LLaMA-2 7B model for sentiment analysis with
 the following prompt:
 
 ```plain
