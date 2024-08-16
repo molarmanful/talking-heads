@@ -21,10 +21,10 @@ export default {
   rules: [],
   shortcuts: [
     {
-      screen: 'w-screen h-dvh',
+      screen: 'w-screen h-[100dvh]',
       full: 'w-full h-full',
       'max-full': 'max-w-full max-h-full',
-      'max-screen': 'max-w-screen max-h-dvh',
+      'max-screen': 'max-w-screen max-h-[100dvh]',
     },
     [/^ofade-([\d]*)$/, ([, c]) => `transition-opacity duration-${c}`],
   ],
